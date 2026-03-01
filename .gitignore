@@ -3,3 +3,5 @@
 *.pkl
 data/
 *.egg-info
+.venv/
+muzic/
