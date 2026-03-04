@@ -4,13 +4,13 @@ import librosa
 import torch
 from muq import MuQ, MuQMuLan
 
-wav, sr = librosa.load('data/wav/cmajor_piano.wav', sr = 24000)
+wav, sr = librosa.load('data/wav/sessiontune1170.wav', sr = 24000)
 device = 'cpu'
 mulan = MuQMuLan.from_pretrained("OpenMuQ/MuQ-MuLan-large")
 mulan = mulan.to(device).eval()
 
 # Extract music embeddings
-wav, sr = librosa.load('data/wav/cmajor_piano.wav', sr = 24000)
+wav, sr = librosa.load('data/wav/sessiontune1170.wav', sr = 24000)
 wavs = torch.tensor(wav).unsqueeze(0).to(device) 
 with torch.no_grad():
     audio_embeds = mulan(wavs = wavs) 

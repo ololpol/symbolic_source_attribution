@@ -18,15 +18,15 @@ model.load_ckpt() # download the default pretrained checkpoint.
 
 # Directly get audio embeddings from audio files
 audio_file = [
-    'data/wav/cmajor_piano.wav',
-    'data/wav/cretansyrtos.wav'
+    'data/wav/sessiontune1170.wav',
+    'data/wav/sessiontune1171.wav'
 ]
 audio_embed = model.get_audio_embedding_from_filelist(x = audio_file, use_tensor=False)
 print(audio_embed[:,-20:])
 print(audio_embed.shape)
 
 # Get audio embeddings from audio data
-audio_data, _ = librosa.load('data/wav/cmajor_piano.wav', sr=48000) # sample rate should be 48000
+audio_data, _ = librosa.load('data/wav/sessiontune1170.wav', sr=48000) # sample rate should be 48000
 audio_data = audio_data.reshape(1, -1) # Make it (1,T) or (N,T)
 audio_embed = model.get_audio_embedding_from_data(x = audio_data, use_tensor=False)
 print("Audio embed first 20:", audio_embed[:,-20:])
@@ -38,15 +38,15 @@ deth = 1/0
 
 # Directly get audio embeddings from audio files, but return torch tensor
 audio_file = [
-    'data/wav/cmajor_piano.wav',
-    'data/wav/cretansyrtos.wav'
+    'data/wav/sessiontune1170.wav',
+    'data/wav/sessiontune1171.wav'
 ]
 audio_embed = model.get_audio_embedding_from_filelist(x = audio_file, use_tensor=True)
 print(audio_embed[:,-20:])
 print(audio_embed.shape)
 
 # Get audio embeddings from audio data
-audio_data, _ = librosa.load('data/wav/cmajor_piano.wav', sr=48000) # sample rate should be 48000
+audio_data, _ = librosa.load('data/wav/sessiontune1170.wav', sr=48000) # sample rate should be 48000
 audio_data = audio_data.reshape(1, -1) # Make it (1,T) or (N,T)
 audio_data = torch.from_numpy(int16_to_float32(float32_to_int16(audio_data))).float() # quantize before send it in to the model
 audio_embed = model.get_audio_embedding_from_data(x = audio_data, use_tensor=True)
