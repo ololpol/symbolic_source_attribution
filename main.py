@@ -10,6 +10,7 @@ import torch
 from muq import MuQ, MuQMuLan
 import laion_clap
 import matplotlib.pyplot as plt
+import plotting
 
 
 def load_abc(data_path):
@@ -209,7 +210,7 @@ if __name__ == "__main__":
     print("embedded data shape: ", ((len(embedded_data), len(embedded_data[0]))))
 
     
-    #TODO plot embeddings
+    plotting.plot_embeddings(embedded_data, embedding)
 
 
     #TODO pick/generate output?
@@ -225,23 +226,8 @@ if __name__ == "__main__":
         dist = compute_dist(e, e_out, method = m)
         out_dists.append(dist[m])
 
-        
-
-    # Plot dists_sorted as a bar chart, x axis is distance threshould, y axis is nr of distances
-    dists_sorted = sorted(out_dists)
     
-    t_step = 0.05
-    t_steps = math.ceil(1/t_step)
-    thresholds = [t_step*i for i in range(t_steps+1)]
-    thresholds[0] = -0.001 # to include the 0 distance
-
-    dist_counts = [sum([1 for d in out_dists if d > t and d <= t+t_step]) for t in thresholds]
-
-    plt.bar(thresholds, dist_counts, width=t_step)
-    plt.xlabel("Distance threshold")
-    plt.ylabel("Number of distances")
-    plt.title("Distribution of distances to output embedding")
-    plt.savefig("plots/distance_distribution.png")
+    plotting.plot_distance_distribution(out_dists, embedding+"_"+m)
     
     
 
