@@ -1,0 +1,11 @@
+pysynth
+librosa
+torch
+muq
+laion_clap
+matplotlib
+transformers
+torchvision
+requests
+tqdm
+unidecode

@@ -1,0 +1,25 @@
+setup
+
+git clone https://github.com/microsoft/muzic.git
+git clone https://github.com/xlvector/abcmidi.git
+git clone folkrnn?
+sudo apt install timidity 
+
+timidity * -Ow
+
+
+python clamp.py -clamp_model_name sander-wood/clamp-small-512 -query_modal music -key_modal text -top_n 5
+#TODOS
+./abc2midi test.abc
+ - Error unrecognized character, make MIDI formatting make sense
+ - Train Folkrnn
+ - Make folkrnn generate using prompt input
+ - CLaMP
+ - Cache stuff
+
+
+
+#Questions
+ - TODOS
+ - Distanec measurements, they seem to be suited for binary sets.
+

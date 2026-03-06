@@ -1,5 +1,3 @@
-train_data_path = "folkrnn/data/ONeillsJigs_parsed_wot"
-embedding = "random" # options: "clamp", "clap", "muq", "folkrnn", "random"
 
 import math
 import os
@@ -11,6 +9,22 @@ from muq import MuQ, MuQMuLan
 import laion_clap
 import matplotlib.pyplot as plt
 import plotting
+from clamp_utils import *
+from transformers import AutoTokenizer
+
+train_data_path = "folkrnn/data/ONeillsJigs_parsed_wot"
+embedding = "clamp" # options: "clamp", "clap", "muq", "folkrnn", "random"
+CLAMP_MODEL_NAME = "sander-wood/clamp-small-512"
+
+
+if torch.cuda.is_available():    
+    device = torch.device("cuda")
+    print('There are %d GPU(s) available.' % torch.cuda.device_count())
+    print('We will use the GPU:', torch.cuda.get_device_name(0))
+
+else:
+    print('No GPU available, using the CPU instead.')
+    device = torch.device("cpu")
 
 
 def load_abc(data_path):
@@ -67,9 +81,30 @@ def embed(tunes, wav_folder, embedding):
     
 def clamp(tunes):
     res = []
+
+
+    # Initialize CLAMP model
+    # load CLaMP model
+    clamp_model = CLaMP.from_pretrained(CLAMP_MODEL_NAME)
+
+    music_length = 1024 #model.config.max_length
+    clamp_model = clamp_model.to(device)
+    clamp_model.eval()
+
+    # initialize patchilizer, and softmax
+
+    patchilizer = MusicPatchilizer()
+    softmax = torch.nn.Softmax(dim=1)
+
+
     for t in tunes:
-        res.append([2*random.random() - 1 for _ in range(100)])
-        pass#TODO
+        query = load_music(data=t)
+        query_ids = encoding_data([query], patchilizer, music_length)
+        query_feature = get_features(query_ids, clamp_model, device)
+        #print(query_feature)
+        res.append(query_feature.cpu().numpy().tolist()[0])
+
+
     return res
 
 def clap(tune_fname):
