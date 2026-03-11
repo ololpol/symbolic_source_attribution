@@ -39,8 +39,8 @@ if __name__ == "__main__":
 
 
     # encode query
-    query_ids = encoding_data([query], QUERY_MODAL, patchilizer, music_length)
-    query_feature = get_features(query_ids, QUERY_MODAL, model, device)
+    query_ids = encoding_data([query], patchilizer, music_length)
+    query_feature = get_features(query_ids, model, device)
 
     print(query_feature.shape)
     print(query_feature[:20])

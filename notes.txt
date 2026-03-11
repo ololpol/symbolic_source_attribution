@@ -12,14 +12,17 @@ python clamp.py -clamp_model_name sander-wood/clamp-small-512 -query_modal music
 #TODOS
 ./abc2midi test.abc
  - Error unrecognized character, make MIDI formatting make sense
- - Train Folkrnn
  - Make folkrnn generate using prompt input
- - CLaMP
  - Cache stuff
+ - Folkrnn embed
 
 
 
 #Questions
  - TODOS
  - Distanec measurements, they seem to be suited for binary sets.
+ - Folkrnn generation with prompt
+ - What plots/experiments to do
+ - 
+
 

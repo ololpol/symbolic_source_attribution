@@ -3,7 +3,6 @@ import math
 
 
 def plot_embeddings(embeddings, name):
-    #TODO use dimensionality reduction instead here
     plt.clf()
     plt.figure(figsize=(8, 6))
     xx = [e[0] for e in embeddings]
@@ -14,6 +13,23 @@ def plot_embeddings(embeddings, name):
     plt.ylabel('Dimension 2')
     plt.grid()
     plt.savefig(f"plots/embeddings_{name}.png")
+
+
+def plot_embeddings_pca(embeddings, name):
+    from sklearn.decomposition import PCA
+    pca = PCA(n_components=2)
+    reduced_embeddings = pca.fit_transform(embeddings)
+
+    plt.clf()
+    plt.figure(figsize=(8, 6))
+    xx = [e[0] for e in reduced_embeddings]
+    yy = [e[1] for e in reduced_embeddings]
+    plt.scatter(xx, yy, alpha=0.5)
+    plt.title(f"PCA-reduced Embeddings for {name}")
+    plt.xlabel('Principal Component 1')
+    plt.ylabel('Principal Component 2')
+    plt.grid()
+    plt.savefig(f"plots/embeddings_pca_{name}.png")
 
 
 def plot_distance_distribution(dists, name, t_step=0.05):

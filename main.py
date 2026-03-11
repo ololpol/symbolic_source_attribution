@@ -14,6 +14,7 @@ from transformers import AutoTokenizer
 
 train_data_path = "folkrnn/data/ONeillsJigs_parsed_wot"
 embedding = "clamp" # options: "clamp", "clap", "muq", "folkrnn", "random"
+methods = ["euclidean", "cosine"] # options: "euclidean", "cosine", "cl", "matching", "hamming", "jaccard", "orchini", "sorencen-dice", "tanimoto", "tucker", "tversky"
 CLAMP_MODEL_NAME = "sander-wood/clamp-small-512"
 
 
@@ -112,7 +113,7 @@ def clap(tune_fname):
 
     fnames = os.listdir(tune_fname)
     tune_fnames = [os.path.join(tune_fname, f) for f in fnames if f.endswith(".wav")]
-    print("Loaded wav files for CLAP embedding: ", tune_fnames)
+    print(f"Loaded wav files for CLAP embedding: ", tune_fnames)
 
     # Initialize CLAP model
     model = laion_clap.CLAP_Module(enable_fusion=False)
@@ -129,9 +130,9 @@ def clap(tune_fname):
         #print("Audio embed first 20:", audio_embed[:,-20:])
         #print("Audio embed shape:", audio_embed.shape)
         res.append(audio_embed[0])
+        i += 1
         if i % 10 == 0:
             print("Extracted CLAP embeddings for {} / {} wav files".format(i, n_files))
-        i += 1
     return res
 
 def muq(tune_fname):
@@ -150,7 +151,6 @@ def muq(tune_fname):
     print("Extracting MuQ-MuLan embeddings for {} wav files...".format(n_files))
     i = 0
     for wav_fname in tune_fnames:
-        wav, sr = librosa.load(wav_fname, sr = 24000)
 
         # Extract music embeddings
         wav, sr = librosa.load(wav_fname, sr = 24000)
@@ -158,20 +158,12 @@ def muq(tune_fname):
         with torch.no_grad():
             audio_embeds = mulan(wavs = wavs) 
 
-        # Extract text embeddings (texts can be in English or Chinese)
-        texts = ["classical genres, hopeful mood, piano.", "一首适合海边风景的小提琴曲，节奏欢快"]
-        with torch.no_grad():
-            text_embeds = mulan(texts = texts)
-
-        # Calculate dot product similarity
-        sim = mulan.calc_similarity(audio_embeds, text_embeds)
-        print(sim)
         # Convert audio_embeds to list and append to res
         res.append(audio_embeds[0].cpu().numpy().tolist())
 
-        if i % 10 == 0:
-            print("Extracted CLAP embeddings for {} / {} wav files".format(i, n_files))
         i += 1
+        if i % 10 == 0:
+            print("Extracted MuQ-MuLan embeddings for {} / {} wav files".format(i, n_files))
     return res
 
 def folkrnn_embed(tunes):
@@ -181,7 +173,7 @@ def folkrnn_embed(tunes):
         pass#TODO
     return res
 
-def compute_dist(e1, e2, methods = [], method = None):
+def compute_dist(e1, data, methods = [], method = None):
     if methods != [] and method != None:
         raise ValueError("Either methods or method should be provided, not both")
     if methods == []:
@@ -192,13 +184,19 @@ def compute_dist(e1, e2, methods = [], method = None):
     res = {}
     for m in methods:
         if m == "euclidean":
-            dist = sum([(a-b)**2 for a,b in zip(e1,e2)])**0.5
+            dists = []
+            for e2 in data:
+                dist = sum([(a-b)**2 for a,b in zip(e1,e2)])**0.5
+                dists.append(dist)
         elif m == "cosine":
             # Cosine similarity
-            dot_product = sum([a*b for a,b in zip(e1,e2)])
-            norm_e1 = sum([a**2 for a in e1])**0.5
-            norm_e2 = sum([b**2 for b in e2])**0.5
-            dist = 1 - dot_product / (norm_e1 * norm_e2)
+            dists = []
+            for e2 in data:
+                dot_product = sum([a*b for a,b in zip(e1,e2)])
+                norm_e1 = sum([a**2 for a in e1])**0.5
+                norm_e2 = sum([b**2 for b in e2])**0.5
+                dist = 1 - dot_product / (norm_e1 * norm_e2)
+                dists.append(dist)
         elif m == "cl":
             #Contrastive learning encoding distance
             pass
@@ -223,12 +221,12 @@ def compute_dist(e1, e2, methods = [], method = None):
         elif m == "tucker":
             # Tucker coefficient of congruence
             pass # i guess this is just cosine similarity?
-        elif m == "Tversky":
+        elif m == "tversky":
             # Tversky index
             pass # For sets
         else:
             raise ValueError("Unsupported distance method: {}".format(m))
-        res[m] = dist
+        res[m] = dists
     return res
 
 
@@ -246,6 +244,7 @@ if __name__ == "__main__":
 
     
     plotting.plot_embeddings(embedded_data, embedding)
+    plotting.plot_embeddings_pca(embedded_data, embedding)
 
 
     #TODO pick/generate output?
@@ -255,14 +254,21 @@ if __name__ == "__main__":
 
 
 
-    m = "cosine"
-    out_dists = []
-    for e in embedded_data:
-        dist = compute_dist(e, e_out, method = m)
-        out_dists.append(dist[m])
-
+    out_dists = compute_dist(e_out, embedded_data, methods = methods)
     
-    plotting.plot_distance_distribution(out_dists, embedding+"_"+m)
+    
+    
+    
+    
+    #for e in embedded_data:
+    #    dist = compute_dist(e, e_out, method = method)
+    #    out_dists.append(dist[method])
+
+    print(out_dists["euclidean"])
+
+    for m in out_dists.keys():
+        plotting.plot_distance_distribution(out_dists[m], embedding+"_"+m)
+    
     
     
 
