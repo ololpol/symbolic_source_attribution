@@ -11,10 +11,11 @@ import matplotlib.pyplot as plt
 import plotting
 from clamp_utils import *
 from transformers import AutoTokenizer
+import pickle
 
 train_data_path = "folkrnn/data/ONeillsJigs_parsed_wot"
-embedding = "clamp" # options: "clamp", "clap", "muq", "folkrnn", "random"
-methods = ["euclidean", "cosine"] # options: "euclidean", "cosine", "cl", "matching", "hamming", "jaccard", "orchini", "sorencen-dice", "tanimoto", "tucker", "tversky"
+embedding = "clap" # options: "clamp", "clap", "muq", "folkrnn", "random"
+methods = ["cosine"] # options: "euclidean", "cosine", "cl", "matching", "hamming", "jaccard", "orchini", "sorencen-dice", "tanimoto", "tucker", "tversky"
 CLAMP_MODEL_NAME = "sander-wood/clamp-small-512"
 
 
@@ -67,18 +68,37 @@ def load_wav():
 
     return wav_fname
 
-def embed(tunes, wav_folder, embedding):
+def embed(tunes, wav_folder, embedding, use_cache = True):
     embedding = embedding.lower()
-    if embedding == "clamp":
-        return clamp(tunes)
-    if embedding == "clap":
-        return clap(wav_folder)
-    if embedding == "muq":
-        return muq(wav_folder)
-    if embedding == "folkrnn":
-        return folkrnn_embed(tunes)
-    if embedding == "random":
-        return [[2*random.random() - 1 for _ in range(512)] for _ in tunes]
+
+    # check if the embedded data exists in cache, if so load it instead of recomputing
+    if use_cache:
+        cache_folder = os.listdir("cache")
+        print("Found files in cache:", cache_folder)
+
+    if use_cache and  "embedded_data_"+embedding+".pkl" in cache_folder:
+        with open("cache/embedded_data_"+embedding+".pkl", "rb") as f:
+            res = pickle.load(f)
+        print(embedding, "embeddings loaded from cache")
+        return res
+    elif embedding == "clamp":
+        res = clamp(tunes)
+    elif embedding == "clap":
+        res = clap(wav_folder)
+    elif embedding == "muq":
+        res = muq(wav_folder)
+    elif embedding == "folkrnn":
+        res = folkrnn_embed(tunes)
+    elif embedding == "random":
+        res = [[2*random.random() - 1 for _ in range(512)] for _ in tunes]
+    else:
+        raise ValueError("Unsupported embedding method: {}".format(embedding))
+
+    # Store res in cache
+    with open("cache/embedded_data_"+embedding+".pkl", "wb") as f:
+        pickle.dump(res, f)
+
+    return res
     
 def clamp(tunes):
     res = []
@@ -113,13 +133,14 @@ def clap(tune_fname):
 
     fnames = os.listdir(tune_fname)
     tune_fnames = [os.path.join(tune_fname, f) for f in fnames if f.endswith(".wav")]
-    print(f"Loaded wav files for CLAP embedding: ", tune_fnames)
+    n_files = len(tune_fnames)
+
+    print(f"Loaded {n_files} wav files for CLAP embedding")
 
     # Initialize CLAP model
     model = laion_clap.CLAP_Module(enable_fusion=False)
     model.load_ckpt() # download the default pretrained checkpoint.
 
-    n_files = len(tune_fnames)
     print("Extracting CLAP embeddings for {} wav files...".format(n_files))
     i = 0
     for wav_fname in tune_fnames:
@@ -140,7 +161,7 @@ def muq(tune_fname):
 
     fnames = os.listdir(tune_fname)
     tune_fnames = [os.path.join(tune_fname, f) for f in fnames if f.endswith(".wav")]
-    print("Loaded wav files for MuQ-MuLan embedding: ", tune_fnames)
+    print(f"Loaded {n_files} wav files for MuQ-MuLan embedding")
 
     # Initialize MuQ-MuLan model
     device = 'cpu'
@@ -164,6 +185,9 @@ def muq(tune_fname):
         i += 1
         if i % 10 == 0:
             print("Extracted MuQ-MuLan embeddings for {} / {} wav files".format(i, n_files))
+    #TODO actually use this
+    with open("muq_embeddings.txt", "w") as f:
+        f.write(str(res))
     return res
 
 def folkrnn_embed(tunes):
@@ -246,6 +270,13 @@ if __name__ == "__main__":
     plotting.plot_embeddings(embedded_data, embedding)
     plotting.plot_embeddings_pca(embedded_data, embedding)
 
+    plotting.plot_pca_pairs(embedded_data, embedding)
+    plotting.plot_pca_variance(embedded_data, embedding)
+
+
+
+    for m in methods:
+        plotting.plot_distance_average(embedded_data, embedding, method=m)
 
     #TODO pick/generate output?
     output = 0 
@@ -256,15 +287,8 @@ if __name__ == "__main__":
 
     out_dists = compute_dist(e_out, embedded_data, methods = methods)
     
-    
-    
-    
-    
-    #for e in embedded_data:
-    #    dist = compute_dist(e, e_out, method = method)
-    #    out_dists.append(dist[method])
 
-    print(out_dists["euclidean"])
+
 
     for m in out_dists.keys():
         plotting.plot_distance_distribution(out_dists[m], embedding+"_"+m)

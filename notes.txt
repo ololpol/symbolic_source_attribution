@@ -5,16 +5,19 @@ git clone https://github.com/xlvector/abcmidi.git
 git clone folkrnn?
 sudo apt install timidity 
 
-timidity * -Ow
+./abc2midi test.abc
+timidity * -Ow (in midi file)
 
 
 python clamp.py -clamp_model_name sander-wood/clamp-small-512 -query_modal music -key_modal text -top_n 5
 #TODOS
-./abc2midi test.abc
- - Error unrecognized character, make MIDI formatting make sense
  - Make folkrnn generate using prompt input
  - Cache stuff
+    - MuQ embeddings
+    - CLAP embeddings
  - Folkrnn embed
+ - Test everything
+    - Order of items should always be the same
 
 
 
@@ -26,3 +29,18 @@ python clamp.py -clamp_model_name sander-wood/clamp-small-512 -query_modal music
  - 
 
 
+#meeting
+- timidity audio choice
+- test sanity of distance measure
+Music factors 
+- Order of parts(swap parts)
+- tempo
+- Key, transposed(abc2midi transposition)
+
+
+
+PLots: 
+- For each jig, mean distance to other embeddings, mean distribution
+- distance distribution, with modified music
+- scatter plot matrix, dim x vs dim y for i in (1,2,3,4,5,...)
+   - Nr of variance explaned with N components graph
