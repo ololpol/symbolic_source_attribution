@@ -13,8 +13,9 @@ from clamp_utils import *
 from transformers import AutoTokenizer
 import pickle
 
-train_data_path = "folkrnn/data/ONeillsJigs_parsed_wot"
-embedding = "clap" # options: "clamp", "clap", "muq", "folkrnn", "random"
+train_data_path = "data/ONeillsJigs_parsed_wot"
+output_data_path = "data/folkrnn_out.abc"
+embedding = "clamp" # options: "clamp", "clap", "muq", "folkrnn", "random"
 methods = ["cosine"] # options: "euclidean", "cosine", "cl", "matching", "hamming", "jaccard", "orchini", "sorencen-dice", "tanimoto", "tucker", "tversky"
 CLAMP_MODEL_NAME = "sander-wood/clamp-small-512"
 
@@ -61,25 +62,28 @@ def ABC2wav(tune):
     #wav = pysynth.make_wav(formatted_abc) #TODO either implement this or do it manually
     return "data/wav/sessiontune1170.wav"
 
-def load_wav():
+def load_wav(label = "ONeillsJigs"):
     #TODO check all is good
-    wav_fname = "data/wav/"
-    print("wav folder detected: ", wav_fname)
-
+    wav_fname = f"data/wav/{label}/"
     return wav_fname
 
-def embed(tunes, wav_folder, embedding, use_cache = True):
+def embed(tunes, wav_folder, embedding, use_cache = True, cache_label = ""):
     embedding = embedding.lower()
 
     # check if the embedded data exists in cache, if so load it instead of recomputing
     if use_cache:
         cache_folder = os.listdir("cache")
         print("Found files in cache:", cache_folder)
+        if cache_label != "":
+            cache_label = "_"+cache_label
+        else: 
+            print("No cache label provided")
+        cache_file = "embeddings_"+embedding+cache_label+".pkl"
 
-    if use_cache and  "embedded_data_"+embedding+".pkl" in cache_folder:
-        with open("cache/embedded_data_"+embedding+".pkl", "rb") as f:
+    if use_cache and cache_file in cache_folder:
+        with open("cache/"+cache_file, "rb") as f:
             res = pickle.load(f)
-        print(embedding, "embeddings loaded from cache")
+        print(embedding+cache_label, "embeddings loaded from cache")
         return res
     elif embedding == "clamp":
         res = clamp(tunes)
@@ -95,8 +99,9 @@ def embed(tunes, wav_folder, embedding, use_cache = True):
         raise ValueError("Unsupported embedding method: {}".format(embedding))
 
     # Store res in cache
-    with open("cache/embedded_data_"+embedding+".pkl", "wb") as f:
+    with open("cache/" + cache_file, "wb") as f:
         pickle.dump(res, f)
+        print("embeddings stored in cache file:", cache_file)
 
     return res
     
@@ -259,14 +264,19 @@ if __name__ == "__main__":
     
     # Load abc and wav formats of the data
     tunes, idx2token, token2idx = load_abc(train_data_path)
-    wav_fname = load_wav()
+    outs, _, _ = load_abc(output_data_path)
+    wav_fname = load_wav("ONeillsJigs")
+    wav_out = load_wav("folkrnn_out")
 
 
     # Embed the data using the specified embedding method
-    embedded_data = embed(tunes, wav_fname, embedding)
+    embedded_data = embed(tunes, wav_fname, embedding, cache_label = "ONeill")
+    embedded_out = embed(outs, wav_out, embedding, cache_label = "output")
     print("embedded data shape: ", ((len(embedded_data), len(embedded_data[0]))))
+    full_data = embedded_data + embedded_out
 
-    
+    plotting.plot_embeddings(full_data, embedding+"full")
+
     plotting.plot_embeddings(embedded_data, embedding)
     plotting.plot_embeddings_pca(embedded_data, embedding)
 
@@ -278,13 +288,9 @@ if __name__ == "__main__":
     for m in methods:
         plotting.plot_distance_average(embedded_data, embedding, method=m)
 
-    #TODO pick/generate output?
-    output = 0 
-    e_out = random.choice(embedded_data) #TODO this should be the embedding of the output tune, not a random one
-    #e_out = embed([output], None, embedding)[0]
 
 
-
+    e_out = random.choice(embedded_out) #TODO this should be the embedding of the output tune, not a random one
     out_dists = compute_dist(e_out, embedded_data, methods = methods)
     
 

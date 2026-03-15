@@ -5,8 +5,9 @@ git clone https://github.com/xlvector/abcmidi.git
 git clone folkrnn?
 sudo apt install timidity 
 
-./abc2midi test.abc
-timidity * -Ow (in midi file)
+abcmidi/abc2midi data/folkrnn_out.abc
+
+timidity data/midi/folkrnn_out/* -Ow (in midi file)
 
 
 python clamp.py -clamp_model_name sander-wood/clamp-small-512 -query_modal music -key_modal text -top_n 5
