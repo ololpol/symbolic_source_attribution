@@ -279,11 +279,12 @@ if __name__ == "__main__":
         plotting.plot_embeddings_pca(data, "ONeill", embedding)
 
         plotting.plot_pca_pairs(data, "ONeill", embedding)
-        plotting.plot_pca_variance(data, "ONeill", embedding)
+        plotting.plot_pca_variance(data, "ONeill", embedding, components=100)
 
 
 
         for m in methods:
+            break
             plotting.plot_distance_average(data, "ONeill", "ONeill", embedding, method=m)
             plotting.plot_distance_average(data, ["ONeill", "output"], ["ONeill", "output"], embedding, method=m)
             plotting.plot_distance_average(data, "ONeill", "output", embedding, method=m)
@@ -292,15 +293,15 @@ if __name__ == "__main__":
 
 
         e_out = random.choice(data["output"]["embed"][embedding])
-        out_dists = compute_dist(e_out, data["ONeill"]["embed"][embedding], methods = methods)
-        out_dists_full = compute_dist(e_out, data["ONeill"]["embed"][embedding] + data["output"]["embed"][embedding], methods = methods)
+        #out_dists = compute_dist(e_out, data["ONeill"]["embed"][embedding], methods = methods)
+        #out_dists_full = compute_dist(e_out, data["ONeill"]["embed"][embedding] + data["output"]["embed"][embedding], methods = methods)
 
 
 
 
-        for m in out_dists.keys():
-            plotting.plot_distance_distribution(out_dists[m], embedding+"_"+m)
-            plotting.plot_distance_distribution(out_dists_full[m], embedding+"_full_"+m)
+        #for m in out_dists.keys():
+        #    plotting.plot_distance_distribution(out_dists[m], embedding+"_"+m)
+        #    plotting.plot_distance_distribution(out_dists_full[m], embedding+"_full_"+m)
         
         
     

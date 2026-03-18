@@ -87,7 +87,7 @@ def plot_embeddings_pca(data, labels = "ONeill", embedding = "clamp", name=None,
 
 def plot_pca_variance(data, labels = "ONeill", embedding = "clamp", name=None, components=5):
     """
-    Generates a bar plot of the explained variance ratio of the PCA components and saves it as a PNG file.
+    Generates a plot of the explained variance ratio of the first PCA components and saves it as a PNG file.
         
     Args:
         data (dict): A dictionary containing the data to be plotted.
@@ -111,12 +111,19 @@ def plot_pca_variance(data, labels = "ONeill", embedding = "clamp", name=None, c
     pca = PCA(n_components=components)
     pca.fit(embeddings)
 
+    acc = 0
+    var_sums = []
+    for var in pca.explained_variance_ratio_:
+        acc += var
+        var_sums.append(acc)
+    
+    
     plt.clf()
     plt.figure(figsize=(8, 6))
-    plt.bar(range(1, 6), pca.explained_variance_ratio_)
-    plt.title(f"PCA Explained Variance Ratio for {name}")
-    plt.xlabel('Principal Component')
-    plt.ylabel('Explained Variance Ratio')
+    plt.plot(range(1, components+1), var_sums, marker='o')
+    plt.title(f"Cumulative Explained Variance Ratio")
+    plt.xlabel('Number of Principal Components')
+    plt.ylabel('Cumulative Explained Variance Ratio')
     plt.grid()
     plt.savefig(f"plots/pca_variance_{name}.png")
 
