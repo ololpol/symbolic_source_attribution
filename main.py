@@ -13,9 +13,8 @@ from clamp_utils import *
 from transformers import AutoTokenizer
 import pickle
 
-train_data_path = "data/ONeillsJigs_parsed_wot"
-output_data_path = "data/folkrnn_out.abc"
-embedding = "clamp" # options: "clamp", "clap", "muq", "folkrnn", "random"
+target_data_labels = ["ONeill", "output"] #TODO add more labels here as needed, these should correspond to the folder names in data/wav/
+embedding = "muq" # options: "clamp", "clap", "muq", "folkrnn", "random"
 methods = ["cosine"] # options: "euclidean", "cosine", "cl", "matching", "hamming", "jaccard", "orchini", "sorencen-dice", "tanimoto", "tucker", "tversky"
 CLAMP_MODEL_NAME = "sander-wood/clamp-small-512"
 
@@ -62,12 +61,12 @@ def ABC2wav(tune):
     #wav = pysynth.make_wav(formatted_abc) #TODO either implement this or do it manually
     return "data/wav/sessiontune1170.wav"
 
-def load_wav(label = "ONeillsJigs"):
+def load_wav(label = "ONeill"):
     #TODO check all is good
     wav_fname = f"data/wav/{label}/"
     return wav_fname
 
-def embed(tunes, wav_folder, embedding, use_cache = True, cache_label = ""):
+def embed(data, embedding, use_cache = True, cache_label = ""):
     embedding = embedding.lower()
 
     # check if the embedded data exists in cache, if so load it instead of recomputing
@@ -86,15 +85,15 @@ def embed(tunes, wav_folder, embedding, use_cache = True, cache_label = ""):
         print(embedding+cache_label, "embeddings loaded from cache")
         return res
     elif embedding == "clamp":
-        res = clamp(tunes)
+        res = clamp(data["abc"])
     elif embedding == "clap":
-        res = clap(wav_folder)
+        res = clap(data["wav"])
     elif embedding == "muq":
-        res = muq(wav_folder)
+        res = muq(data["wav"])
     elif embedding == "folkrnn":
-        res = folkrnn_embed(tunes)
+        res = folkrnn_embed(data["abc"])
     elif embedding == "random":
-        res = [[2*random.random() - 1 for _ in range(512)] for _ in tunes]
+        res = [[2*random.random() - 1 for _ in range(512)] for _ in data["abc"]]
     else:
         raise ValueError("Unsupported embedding method: {}".format(embedding))
 
@@ -166,10 +165,11 @@ def muq(tune_fname):
 
     fnames = os.listdir(tune_fname)
     tune_fnames = [os.path.join(tune_fname, f) for f in fnames if f.endswith(".wav")]
+    n_files = len(tune_fnames)
+
     print(f"Loaded {n_files} wav files for MuQ-MuLan embedding")
 
     # Initialize MuQ-MuLan model
-    device = 'cpu'
     mulan = MuQMuLan.from_pretrained("OpenMuQ/MuQ-MuLan-large")
     mulan = mulan.to(device).eval()
 
@@ -190,9 +190,6 @@ def muq(tune_fname):
         i += 1
         if i % 10 == 0:
             print("Extracted MuQ-MuLan embeddings for {} / {} wav files".format(i, n_files))
-    #TODO actually use this
-    with open("muq_embeddings.txt", "w") as f:
-        f.write(str(res))
     return res
 
 def folkrnn_embed(tunes):
@@ -263,41 +260,44 @@ def compute_dist(e1, data, methods = [], method = None):
 if __name__ == "__main__":
     
     # Load abc and wav formats of the data
-    tunes, idx2token, token2idx = load_abc(train_data_path)
-    outs, _, _ = load_abc(output_data_path)
-    wav_fname = load_wav("ONeillsJigs")
-    wav_out = load_wav("folkrnn_out")
+    data = {}
+
+    for label in target_data_labels:
+        data[label] = {}
+        data[label]["abc"], _, _ = load_abc(f"data/{label}.abc")
+        data[label]["wav"] = load_wav(label)
+        embedded_data = embed(data[label], embedding, cache_label = label)
+        data[label]["embedded"] = embedded_data
+
 
 
     # Embed the data using the specified embedding method
-    embedded_data = embed(tunes, wav_fname, embedding, cache_label = "ONeill")
-    embedded_out = embed(outs, wav_out, embedding, cache_label = "output")
-    print("embedded data shape: ", ((len(embedded_data), len(embedded_data[0]))))
-    full_data = embedded_data + embedded_out
 
-    plotting.plot_embeddings(full_data, embedding+"full")
 
-    plotting.plot_embeddings(embedded_data, embedding)
-    plotting.plot_embeddings_pca(embedded_data, embedding)
+    plotting.plot_embeddings(data["ONeill"]["embedded"], embedding)
+    plotting.plot_embeddings_pca(data["ONeill"]["embedded"], embedding)
 
-    plotting.plot_pca_pairs(embedded_data, embedding)
-    plotting.plot_pca_variance(embedded_data, embedding)
+    plotting.plot_pca_pairs(data["ONeill"]["embedded"], embedding)
+    plotting.plot_pca_variance(data["ONeill"]["embedded"], embedding)
 
 
 
     for m in methods:
-        plotting.plot_distance_average(embedded_data, embedding, method=m)
+        plotting.plot_distance_average(data["ONeill"]["embedded"], embedding, method=m)
+        plotting.plot_distance_average(data["ONeill"]["embedded"] + data["output"]["embedded"], embedding+"_full", method=m,)
 
 
 
-    e_out = random.choice(embedded_out) #TODO this should be the embedding of the output tune, not a random one
-    out_dists = compute_dist(e_out, embedded_data, methods = methods)
-    
+    e_out = random.choice(data["output"]["embedded"])
+    out_dists = compute_dist(e_out, data["ONeill"]["embedded"], methods = methods)
+    out_dists_full = compute_dist(e_out, data["ONeill"]["embedded"] + data["output"]["embedded"], methods = methods)
+
 
 
 
     for m in out_dists.keys():
         plotting.plot_distance_distribution(out_dists[m], embedding+"_"+m)
+        plotting.plot_distance_distribution(out_dists_full[m], embedding+"_full_"+m)
     
     
     

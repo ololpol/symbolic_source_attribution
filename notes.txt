@@ -11,6 +11,7 @@ timidity data/midi/folkrnn_out/* -Ow (in midi file)
 
 
 python clamp.py -clamp_model_name sander-wood/clamp-small-512 -query_modal music -key_modal text -top_n 5
+
 #TODOS
  - Make folkrnn generate using prompt input
  - Cache stuff
