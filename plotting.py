@@ -1,10 +1,39 @@
 import matplotlib.pyplot as plt
 import math
+from sklearn.decomposition import PCA
+
 
 from main import compute_dist
 
+def extract_embeddings(data, labels, embedding):
+    # Extract the embeddings for the specified labels and embedding type
+    extracted = []
+    for label in labels:
+        extracted += data[label]["embed"][embedding]
+    return extracted
 
-def plot_embeddings(embeddings, name):
+def plot_embeddings(data, labels = "ONeill", embedding = "clamp", name=None):
+    """
+    Generates a 2D scatter plots of the first two dimensions of the embeddings and saves it as a PNG file.
+        
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        labels (str or list[str]): The label(s) of the data to be plotted.
+        embedding (str): The embedding type to be plotted.
+        name (str): A string used in the title and filename of the plot.
+    Returns:
+        None
+            
+    Image is saved as embeddings_{name}.png, default name is the label and embedding type.
+    """
+    if isinstance(labels, str):
+        labels = [labels]
+    embeddings = extract_embeddings(data, labels, embedding)
+    if name is None:
+        label_str = "-".join(labels)
+        name = f"{label_str}_{embedding}"
+
+
     plt.clf()
     plt.figure(figsize=(8, 6))
     xx = [e[0] for e in embeddings]
@@ -17,10 +46,29 @@ def plot_embeddings(embeddings, name):
     plt.savefig(f"plots/embeddings_{name}.png")
 
 
-def plot_embeddings_pca(embeddings, name):
+def plot_embeddings_pca(data, labels = "ONeill", embedding = "clamp", name=None, components=5):
+    """
+    Generates a 2D scatter plots of the first two dimension of the PCA-reduced embeddings and saves it as a PNG file.
+        
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        labels (str or list[str]): The label(s) of the data to be plotted.
+        embedding (str): The embedding type to be plotted.
+        name (str): A string used in the title and filename of the plot.
+    Returns:
+        None
+            
+    Image is saved as embeddings_pca_{name}.png, default name is the label(s) and embedding type.
+    """
+    if isinstance(labels, str):
+        labels = [labels]
+    embeddings = extract_embeddings(data, labels, embedding)
+    if name is None:
+        label_str = "-".join(labels)
+        name = f"{label_str}_{embedding}"
 
-    from sklearn.decomposition import PCA
-    pca = PCA(n_components=5)
+
+    pca = PCA(n_components=components)
     reduced_embeddings = pca.fit_transform(embeddings)
 
     print("PCA VR:", pca.explained_variance_ratio_)
@@ -37,10 +85,30 @@ def plot_embeddings_pca(embeddings, name):
     plt.grid()
     plt.savefig(f"plots/embeddings_pca_{name}.png")
 
-def plot_pca_variance(embeddings, name):
-    #TODO UHHH this is defenitly wrong
-    from sklearn.decomposition import PCA
-    pca = PCA(n_components=5)
+def plot_pca_variance(data, labels = "ONeill", embedding = "clamp", name=None, components=5):
+    """
+    Generates a bar plot of the explained variance ratio of the PCA components and saves it as a PNG file.
+        
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        labels (str or list[str]): The label(s) of the data to be plotted.
+        embedding (str): The embedding type to be plotted.
+        name (str): A string used in the title and filename of the plot.
+    Returns:
+        None
+            
+    Image is saved as pca_variance_{name}.png, default name is the label(s) and embedding type.
+    """
+    if isinstance(labels, str):
+        labels = [labels]
+    embeddings = extract_embeddings(data, labels, embedding)
+    if name is None:
+        label_str = "-".join(labels)
+        name = f"{label_str}_{embedding}"
+
+
+    #TODO UHHH this is defenitly wrong?
+    pca = PCA(n_components=components)
     pca.fit(embeddings)
 
     plt.clf()
@@ -52,8 +120,28 @@ def plot_pca_variance(embeddings, name):
     plt.grid()
     plt.savefig(f"plots/pca_variance_{name}.png")
 
-def plot_pca_pairs(embeddings, name):
-    from sklearn.decomposition import PCA
+def plot_pca_pairs(data, labels = "ONeill", embedding = "clamp", name=None):
+    """
+    Generates a grid of scatter plots for all pairs of the first 5 principal components and saves it as a PNG file.
+        
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        labels (str or list[str]): The label(s) of the data to be plotted.
+        embedding (str): The embedding type to be plotted.
+        name (str): A string used in the title and filename of the plot.
+    Returns:
+        None
+            
+    Image is saved as pca_pairs_{name}.png, default name is the label(s) and embedding type.
+    """
+    if isinstance(labels, str):
+        labels = [labels]
+    embeddings = extract_embeddings(data, labels, embedding)
+    if name is None:
+        label_str = "-".join(labels)
+        name = f"{label_str}_{embedding}"
+
+
     pca = PCA(n_components=5)
     reduced_embeddings = pca.fit_transform(embeddings)
 
@@ -74,8 +162,7 @@ def plot_pca_pairs(embeddings, name):
 
 
 def plot_distance_distribution(dists, name, t_step=0.05):
-    # Plot dists_sorted as a bar chart, x axis is distance threshould, y axis is nr of distances
-    
+
     t_steps = math.ceil(1/t_step)
     thresholds = [t_step*i for i in range(t_steps+1)]
     thresholds[0] = -0.001 # to include the 0 distance
@@ -90,16 +177,51 @@ def plot_distance_distribution(dists, name, t_step=0.05):
     plt.savefig(f"plots/distance_distribution_{name}.png")
 
 
-def plot_distance_average(embedded_data, name, method = "cosine", t_step=0.05):
-    # Plot the average distance to the output embedding for each distance threshold
+def plot_distance_average(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", name = None, t_step=0.05):
+    """
+    Generates a 2D scatter plots of the first two dimensions of the embeddings and saves it as a PNG file.
+        
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        source_labels (str or list[str]): the labels of the data subset to compute distances from.
+        target_labels (str or list[str]): the labels of the data subset to compute distances to.
+        embedding (str): The embedding type to use as data.
+        method (str): The method to use for distance computation.
+        name (str): A string used in the title and filename of the plot.
+        t_step (float): The step size for distance thresholds in the plot.
+    Returns:
+        None
+            
+    Image is saved as distance_average_{name}.png", default name is the source labels + target labels + embedding + method.
+    """
+     
+
+    if isinstance(source_labels, str):
+        source_labels = [source_labels]
+    if target_labels is None:
+        target_labels = source_labels
+    if isinstance(target_labels, str):
+        target_labels = [target_labels]
+    source_embeddings = extract_embeddings(data, source_labels, embedding)
+    target_embeddings = extract_embeddings(data, target_labels, embedding)
+
+    if name is None:
+        source_label_str = "-".join(source_labels)
+        target_label_str = "-".join(target_labels)
+        if source_label_str == target_label_str:
+             name = f"{source_label_str}_{embedding}"
+        else: 
+            name = f"{source_label_str}_{target_label_str}_{embedding}_{method}"
+
+
 
     dists = []
-    for e in embedded_data:
-        out_dists = compute_dist(e, embedded_data, method=method)
+    for e in source_embeddings:
+        out_dists = compute_dist(e, target_embeddings, method=method)
         dists.append(out_dists[method])
 
-    N = len(embedded_data)
-
+    N = len(dists) # = len(source_embeddings)
+    
     t_steps = math.ceil(1/t_step)
     thresholds = [t_step*i for i in range(t_steps+1)]
     thresholds[0] = -0.001 # to include the 0 distance
@@ -119,6 +241,6 @@ def plot_distance_average(embedded_data, name, method = "cosine", t_step=0.05):
     plt.clf()
     plt.bar(thresholds, dist_counts, width=t_step)
     plt.xlabel("Distance threshold")
-    plt.ylabel("Average distance between embeddings")
-    plt.title("Average distance between embeddings by distance threshold")
-    plt.savefig(f"plots/distance_average_{name}_{method}.png")
+    plt.ylabel("Average number of distances within threshold")
+    plt.title("Average distribution of distances")
+    plt.savefig(f"plots/distance_average_{name}.png")
