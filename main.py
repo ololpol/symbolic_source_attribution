@@ -14,7 +14,7 @@ from transformers import AutoTokenizer
 import pickle
 
 target_data_labels = ["ONeill", "output"] #TODO add more labels here as needed, these should correspond to the folder names in data/wav/
-embeddings = ["muq"] # options: "clamp", "clap", "muq", "folkrnn", "random"
+embeddings = ["clamp", "clap", "muq"] # options: "clamp", "clap", "muq", "folkrnn", "random"
 methods = ["cosine"] # options: "euclidean", "cosine", "cl", "matching", "hamming", "jaccard", "orchini", "sorencen-dice", "tanimoto", "tucker", "tversky"
 CLAMP_MODEL_NAME = "sander-wood/clamp-small-512"
 
@@ -272,37 +272,37 @@ if __name__ == "__main__":
             data[label]["embed"][embedding] = embedded_data
 
 
-    embedding = embeddings[0] #TODO do this for all embeddings, not just the first one
-    # Embed the data using the specified embedding method
+    for embedding in embeddings:
+        # Embed the data using the specified embedding method
 
-    plotting.plot_embeddings(data, "ONeill", embedding)
-    plotting.plot_embeddings_pca(data, "ONeill", embedding)
+        plotting.plot_embeddings(data, "ONeill", embedding)
+        plotting.plot_embeddings_pca(data, "ONeill", embedding)
 
-    plotting.plot_pca_pairs(data, "ONeill", embedding)
-    plotting.plot_pca_variance(data, "ONeill", embedding)
-
-
-
-    for m in methods:
-        plotting.plot_distance_average(data, "ONeill", "ONeill", embedding, method=m)
-        plotting.plot_distance_average(data, ["ONeill", "output"], ["ONeill", "output"], embedding, method=m)
-        plotting.plot_distance_average(data, "ONeill", "output", embedding, method=m)
-        plotting.plot_distance_average(data, "output", "ONeill", embedding, method=m)
+        plotting.plot_pca_pairs(data, "ONeill", embedding)
+        plotting.plot_pca_variance(data, "ONeill", embedding)
 
 
 
-    e_out = random.choice(data["output"]["embed"][embedding])
-    out_dists = compute_dist(e_out, data["ONeill"]["embed"][embedding], methods = methods)
-    out_dists_full = compute_dist(e_out, data["ONeill"]["embed"][embedding] + data["output"]["embed"][embedding], methods = methods)
+        for m in methods:
+            plotting.plot_distance_average(data, "ONeill", "ONeill", embedding, method=m)
+            plotting.plot_distance_average(data, ["ONeill", "output"], ["ONeill", "output"], embedding, method=m)
+            plotting.plot_distance_average(data, "ONeill", "output", embedding, method=m)
+            plotting.plot_distance_average(data, "output", "ONeill", embedding, method=m)
+
+
+
+        e_out = random.choice(data["output"]["embed"][embedding])
+        out_dists = compute_dist(e_out, data["ONeill"]["embed"][embedding], methods = methods)
+        out_dists_full = compute_dist(e_out, data["ONeill"]["embed"][embedding] + data["output"]["embed"][embedding], methods = methods)
 
 
 
 
-    for m in out_dists.keys():
-        plotting.plot_distance_distribution(out_dists[m], embedding+"_"+m)
-        plotting.plot_distance_distribution(out_dists_full[m], embedding+"_full_"+m)
-    
-    
+        for m in out_dists.keys():
+            plotting.plot_distance_distribution(out_dists[m], embedding+"_"+m)
+            plotting.plot_distance_distribution(out_dists_full[m], embedding+"_full_"+m)
+        
+        
     
 
     
