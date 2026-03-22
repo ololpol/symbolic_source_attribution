@@ -184,6 +184,84 @@ def plot_distance_distribution(dists, name, t_step=0.05):
     plt.savefig(f"plots/distance_distribution_{name}.png")
 
 
+def plot_origin_distance(data, labels = "ONeill", embedding = "clamp", method="euclidean", name=None, t_step=0.2):
+
+    if isinstance(labels, str):
+        labels = [labels]
+    embeddings = extract_embeddings(data, labels, embedding)
+
+    if name is None:
+        label_str = "-".join(labels)
+        name = f"{label_str}_{embedding}_{method}"
+
+    embed_len = len(embeddings[0])
+    origin = [0]*embed_len
+
+    dists = compute_dist(origin, embeddings, method=method)[method]
+    dist_max = max(dists)
+
+    t_steps = math.ceil(dist_max/t_step)
+    thresholds = [t_step*i for i in range(t_steps+1)]
+    thresholds[0] = -0.001 # to include the 0 distance
+
+    dist_counts = [sum([1 for d in dists if d > t and d <= t+t_step]) for t in thresholds]
+
+    
+    plt.clf()
+    plt.bar(thresholds, dist_counts, width=t_step)
+    plt.xlabel("Distance threshold")
+    plt.ylabel("Number of distances")
+    plt.title("Distribution of distances to origin")
+    plt.savefig(f"plots/origin_distance_distribution_{name}.png")
+
+
+def plot_centroid_distance(data, labels = "ONeill", embedding = "clamp", method="euclidean", name=None, t_step=0.2):
+
+    if isinstance(labels, str):
+        labels = [labels]
+    embeddings = extract_embeddings(data, labels, embedding)
+
+    if name is None:
+        label_str = "-".join(labels)
+        name = f"{label_str}_{embedding}_{method}"
+
+    embed_len = len(embeddings[0])
+
+
+    centroid = [sum([e[i] for e in embeddings])/len(embeddings) for i in range(embed_len)]
+    
+    dists = compute_dist(centroid, embeddings, method=method)[method]
+    dist_max = max(dists)
+
+    t_steps = math.ceil(dist_max/t_step)
+    thresholds = [t_step*i for i in range(t_steps+1)]
+    thresholds[0] = -0.001 # to include the 0 distance
+
+    dist_counts = [sum([1 for d in dists if d > t and d <= t+t_step]) for t in thresholds]
+
+    
+    plt.clf()
+    plt.bar(thresholds, dist_counts, width=t_step)
+    plt.xlabel("Distance threshold")
+    plt.ylabel("Number of distances")
+    plt.title("Distribution of distances to centroid")
+    plt.savefig(f"plots/centroid_distance_distribution_{name}.png")
+
+def plot_distance_distribution(dists, name, t_step=0.05):
+
+    t_steps = math.ceil(1/t_step)
+    thresholds = [t_step*i for i in range(t_steps+1)]
+    thresholds[0] = -0.001 # to include the 0 distance
+
+    dist_counts = [sum([1 for d in dists if d > t and d <= t+t_step]) for t in thresholds]
+
+    plt.clf()
+    plt.bar(thresholds, dist_counts, width=t_step)
+    plt.xlabel("Distance threshold")
+    plt.ylabel("Number of distances")
+    plt.title("Distribution of distances to output embedding")
+    plt.savefig(f"plots/distance_distribution_{name}.png")
+
 def plot_distance_average(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", name = None, t_step=0.05):
     """
     Generates a 2D scatter plots of the first two dimensions of the embeddings and saves it as a PNG file.

@@ -272,6 +272,9 @@ if __name__ == "__main__":
             data[label]["embed"][embedding] = embedded_data
 
 
+
+
+
     for embedding in embeddings:
         # Embed the data using the specified embedding method
 
@@ -293,15 +296,17 @@ if __name__ == "__main__":
 
 
         e_out = random.choice(data["output"]["embed"][embedding])
-        #out_dists = compute_dist(e_out, data["ONeill"]["embed"][embedding], methods = methods)
-        #out_dists_full = compute_dist(e_out, data["ONeill"]["embed"][embedding] + data["output"]["embed"][embedding], methods = methods)
+
+        out_dists = compute_dist(e_out, data["ONeill"]["embed"][embedding], methods = methods)
+        out_dists_full = compute_dist(e_out, data["ONeill"]["embed"][embedding] + data["output"]["embed"][embedding], methods = methods)
 
 
 
-
-        #for m in out_dists.keys():
-        #    plotting.plot_distance_distribution(out_dists[m], embedding+"_"+m)
-        #    plotting.plot_distance_distribution(out_dists_full[m], embedding+"_full_"+m)
+        for m in out_dists.keys():
+            plotting.plot_origin_distance(data, "ONeill", embedding, method="euclidean", t_step=0.01)
+            plotting.plot_centroid_distance(data, "ONeill", embedding, method="euclidean", t_step=0.01)
+            plotting.plot_distance_distribution(out_dists[m], embedding+"_"+m, t_step=0.01)
+            plotting.plot_distance_distribution(out_dists_full[m], embedding+"_full_"+m, t_step=0.01)
         
         
     

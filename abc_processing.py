@@ -22,12 +22,17 @@ def load_abc(data_path):
     return tunes, idx2token, token2idx
 
 
-tunes, _, _ = load_abc("data/ONeillsJigs_parsed_wot_copy")
+
+target_file = "data/allabcdodec_parsed_wot_0"
+tunes, _, _ = load_abc(target_file)
 
 
-with open("data/ONeillsJigs_labelled", 'w') as f:
+
+with open(target_file + "_labelled", 'w') as f:
     i = 0
     for tune in tunes:
+        tune = tune.replace(' ', '')
+
         i += 1
-        f.write("X: " + str(i) + "\n")
+        f.write("X:" + str(i) + "\n")
         f.write(tune + "\n\n")
