@@ -13,9 +13,10 @@ from clamp_utils import *
 from transformers import AutoTokenizer
 import pickle
 import numpy as np
+import scipy
 
-target_data_labels = ["ONeill", "output"] #TODO add more labels here as needed, these should correspond to the folder names in data/wav/
-embeddings = ["clamp", "clap", "muq"] # options: "clamp", "clap", "muq", "folkrnn", "random"
+target_data_labels = ["ONeill", "output", "Folkwiki","Folkwiki_ONeill_10","Folkwiki_ONeill_20","Folkwiki_ONeill_30","Folkwiki_ONeill_40","Folkwiki_ONeill_50","Folkwiki_ONeill_60","Folkwiki_ONeill_70","Folkwiki_ONeill_80","Folkwiki_ONeill_90","Folkwiki_ONeill_100"] #TODO add more labels here as needed, these should correspond to the folder names in data/wav/
+embeddings = ["clamp"] # options: "clamp", "clap", "muq", "folkrnn", "random"
 methods = ["cosine"] # options: "euclidean", "cosine", "cl", "matching", "hamming", "jaccard", "orchini", "sorencen-dice", "tanimoto", "tucker", "tversky"
 CLAMP_MODEL_NAME = "sander-wood/clamp-small-512"
 
@@ -32,7 +33,7 @@ else:
 
 def load_abc(data_path):
     with open(data_path, 'r') as f:
-        data = f.read()
+        data = f.read().strip()
 
 
     tokens_set = set(data.split())
@@ -45,11 +46,6 @@ def load_abc(data_path):
     token2idx = dict(zip(idx2token, range(vocab_size)))
     tunes = data.split('\n\n')
 
-    print(tunes[0])
-    print()
-    print(idx2token)
-    print()
-    print(token2idx)
 
     return tunes, idx2token, token2idx
 
@@ -73,7 +69,7 @@ def embed(data, embedding, use_cache = True, cache_label = ""):
     # check if the embedded data exists in cache, if so load it instead of recomputing
     if use_cache:
         cache_folder = os.listdir("cache")
-        print("Found files in cache:", cache_folder)
+        #print("Found files in cache:", cache_folder)
         if cache_label != "":
             cache_label = "_"+cache_label
         else: 
@@ -217,15 +213,20 @@ def compute_dist(e1, data, methods = [], method = None):
                 dist = sum([(a-b)**2 for a,b in zip(e1,e2)])**0.5
                 dists.append(np.array(dist))
         elif m == "cosine":
-            # Cosine similarity
+            # Cosine distances
             # TODO do this with numpy for efficiency
-            dists = []
-            for e2 in data:
-                dot_product = sum([a*b for a,b in zip(e1,e2)])
-                norm_e1 = sum([a**2 for a in e1])**0.5
-                norm_e2 = sum([b**2 for b in e2])**0.5
-                dist = 1 - dot_product / (norm_e1 * norm_e2)
-                dists.append(np.array(dist))
+            dists = np.zeros(len(data))
+            for i, e2 in enumerate(data):
+                
+                dist = scipy.spatial.distance.cosine(e1, e2)
+                dists[i] = dist
+                
+                
+                #dot_product = sum([a*b for a,b in zip(e1,e2)])
+                #norm_e1 = sum([a**2 for a in e1])**0.5
+                #norm_e2 = sum([b**2 for b in e2])**0.5
+                #dist = 1 - dot_product / (norm_e1 * norm_e2)
+                #dists.append(np.array(dist))
         elif m == "cl":
             #Contrastive learning encoding distance
             pass
@@ -259,13 +260,16 @@ def compute_dist(e1, data, methods = [], method = None):
     return res
 
 
-def compute_attribution(output, data, data_labels = None, attribution_method = None, dist_method = "cosine", embedding = "clamp"):
+def compute_attribution(data, output_labels, data_labels = None, attribution_method = None, dist_method = "cosine", embedding = "clamp", temperature = 1):
     # Compute attribution scores the output embedding with respect to the data embeddings using the specified method
     
+    #TODO more ways to do this
     
     id_map = {}
     label_map = {}
     ids = []
+    ns = []
+    n_artists = len(data_labels)
     embeddings = None
     i = 0
     for label in data_labels:
@@ -275,16 +279,37 @@ def compute_attribution(output, data, data_labels = None, attribution_method = N
             embeddings = np.vstack([embeddings, data[label]["embed"][embedding]])
         id_map[i] = label
         label_map[label] = i
-        ids.append([i for _ in data[label]["embed"][embedding]])
+        ids += [i for _ in data[label]["embed"][embedding]]
+        ns.append(len(data[label]["embed"][embedding]))
         i += 1
 
+    outputs = None
+    for label in output_labels:
+        if outputs is None:
+            outputs = data[label]["embed"][embedding]
+        else:
+            outputs = np.vstack([outputs, data[label]["embed"][embedding]])
+    
 
-    dists = compute_dist(output, embeddings, method=dist_method)[dist_method]
+    res = np.zeros((len(outputs), n_artists))
+    for j, output in enumerate(outputs):
+        dists = compute_dist(output, embeddings, method=dist_method)[dist_method]
 
+        sims = np.exp(-np.array(dists)/temperature)
 
-    #TODO convert distances to similarities
+        attribution = np.zeros(n_artists)
+        for i in range(len(sims)):
+            attribution[ids[i]] += sims[i]
+        
+        for i in range(len(attribution)):
+            attribution[i] /= ns[i] #normalize per artist
 
-    #Softmax (similarities)
+        res[j] = attribution
+    
+    res = scipy.special.softmax(res, axis=1) #normalize across artists
+
+    return res, id_map, label_map
+
 
 
 
@@ -295,19 +320,21 @@ if __name__ == "__main__":
 
     for label in target_data_labels:
         data[label] = {}
-        data[label]["abc"], _, _ = load_abc(f"data/{label}.abc")
+        if os.path.exists(f"data/{label}.abc"):
+            data[label]["abc"], _, _ = load_abc(f"data/{label}.abc")
+        elif os.path.exists(f"data/{label}.txt"):
+            data[label]["abc"], _, _ = load_abc(f"data/{label}.txt")
+        else:
+            raise ValueError(f"No abc or txt file found for label {label} in data folder")
         data[label]["wav"] = load_wav(label)
         data[label]["embed"] = {}
         for embedding in embeddings:
             embedded_data = embed(data[label], embedding, cache_label = label)
             data[label]["embed"][embedding] = embedded_data
-            print(embedded_data)
             print(data[label]["embed"][embedding].shape)
             embed_len = len(embedded_data[0])
             data[label]["avg_embed"] = np.average(embedded_data, axis=0)
             #data[label]["avg_embed"] = [sum([e[i] for e in embedded_data])/len(embedded_data) for i in range(embed_len)]
-
-
 
 
 
@@ -343,6 +370,22 @@ if __name__ == "__main__":
             plotting.plot_centroid_distance(data, "ONeill", embedding, method="euclidean", t_step=0.01)
             plotting.plot_distance_distribution(out_dists[m], embedding+"_"+m, t_step=0.01)
             plotting.plot_distance_distribution(out_dists_full[m], embedding+"_full_"+m, t_step=0.01)
+
+        
+
+        #TODO look at temperature
+
+
+        for label in target_data_labels:
+                
+            target_labels = target_data_labels.copy()
+            target_labels.remove(label)
+            attribution, id_map, label_map = compute_attribution(data, output_labels=[label], data_labels = target_labels, attribution_method = None, dist_method = "cosine", embedding = embedding, temperature = 0.1)
+
+            
+            plotting.plot_attribution(random.choice(attribution), id_map, label + "_" + embedding)
+            plotting.plot_attribution_distribution(data, [label], target_labels, temperature = 0.1)
+
         
         
     

@@ -4,7 +4,7 @@ from sklearn.decomposition import PCA
 import numpy as np
 
 
-from main import compute_dist
+from main import compute_dist, compute_attribution
 
 def extract_embeddings(data, labels, embedding):
     # Extract the embeddings for the specified labels and embedding type
@@ -333,3 +333,48 @@ def plot_distance_average(data, source_labels = "ONeill", target_labels = None, 
     plt.ylabel("Average number of distances within threshold")
     plt.title("Average distribution of distances")
     plt.savefig(f"plots/distance_average_{name}.png")
+
+
+def plot_attribution(attribution, id_map, name):
+    #TODO maybe make this work directly on data dict?
+
+    plt.clf()
+    plt.bar(id_map.values(), attribution)
+    plt.xlabel("Artist")
+    plt.xticks(rotation=30, ha="right")
+    plt.ylabel("Attribution value")
+    plt.title(f"Attribution for {name}")
+    plt.tight_layout()
+    plt.savefig(f"plots/attribution_{name}.png")
+
+def plot_attribution_distribution(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", temperature = 1, name=None):
+    
+
+    if isinstance(source_labels, str):
+        source_labels = [source_labels]
+
+    if target_labels == None:
+        target_labels = source_labels
+    if isinstance(target_labels, str):
+        target_labels = [target_labels]
+
+
+    if name is None:
+        source_str = "-".join(source_labels)
+        name = f"{source_str}_{embedding}_{method}"
+
+    attribution, id_map, _ = compute_attribution(data, source_labels, target_labels, temperature = temperature)
+
+    res = [0]*len(attribution[0])
+    for i in range(len(attribution)):
+        amax = np.argmax(attribution[i])
+        res[amax] += 1
+
+    plt.clf()
+    plt.bar(id_map.values(), res)
+    plt.xlabel("Artist")
+    plt.xticks(rotation=30, ha="right")
+    plt.ylabel("Number of times attributed")
+    plt.title(f"Attribution distribution for {name}")
+    plt.tight_layout()
+    plt.savefig(f"plots/attribution_distribution_{name}.png")
