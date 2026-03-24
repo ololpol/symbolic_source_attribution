@@ -12,6 +12,7 @@ import plotting
 from clamp_utils import *
 from transformers import AutoTokenizer
 import pickle
+import numpy as np
 
 target_data_labels = ["ONeill", "output"] #TODO add more labels here as needed, these should correspond to the folder names in data/wav/
 embeddings = ["clamp", "clap", "muq"] # options: "clamp", "clap", "muq", "folkrnn", "random"
@@ -83,7 +84,7 @@ def embed(data, embedding, use_cache = True, cache_label = ""):
         with open("cache/"+cache_file, "rb") as f:
             res = pickle.load(f)
         print(embedding+cache_label, "embeddings loaded from cache")
-        return res
+        return np.array(res)
     elif embedding == "clamp":
         res = clamp(data["abc"])
     elif embedding == "clap":
@@ -102,7 +103,7 @@ def embed(data, embedding, use_cache = True, cache_label = ""):
         pickle.dump(res, f)
         print("embeddings stored in cache file:", cache_file)
 
-    return res
+    return np.array(res)
     
 def clamp(tunes):
     res = []
@@ -207,22 +208,24 @@ def compute_dist(e1, data, methods = [], method = None):
             raise ValueError("Either methods or method should be provided")
         methods = [method]
     
-    res = {}
+    res = {} #TODO idk if this helps
     for m in methods:
         if m == "euclidean":
+            # TODO do this with numpy for efficiency
             dists = []
             for e2 in data:
                 dist = sum([(a-b)**2 for a,b in zip(e1,e2)])**0.5
-                dists.append(dist)
+                dists.append(np.array(dist))
         elif m == "cosine":
             # Cosine similarity
+            # TODO do this with numpy for efficiency
             dists = []
             for e2 in data:
                 dot_product = sum([a*b for a,b in zip(e1,e2)])
                 norm_e1 = sum([a**2 for a in e1])**0.5
                 norm_e2 = sum([b**2 for b in e2])**0.5
                 dist = 1 - dot_product / (norm_e1 * norm_e2)
-                dists.append(dist)
+                dists.append(np.array(dist))
         elif m == "cl":
             #Contrastive learning encoding distance
             pass
@@ -256,6 +259,34 @@ def compute_dist(e1, data, methods = [], method = None):
     return res
 
 
+def compute_attribution(output, data, data_labels = None, attribution_method = None, dist_method = "cosine", embedding = "clamp"):
+    # Compute attribution scores the output embedding with respect to the data embeddings using the specified method
+    
+    
+    id_map = {}
+    label_map = {}
+    ids = []
+    embeddings = None
+    i = 0
+    for label in data_labels:
+        if embeddings is None:
+            embeddings = data[label]["embed"][embedding]
+        else:
+            embeddings = np.vstack([embeddings, data[label]["embed"][embedding]])
+        id_map[i] = label
+        label_map[label] = i
+        ids.append([i for _ in data[label]["embed"][embedding]])
+        i += 1
+
+
+    dists = compute_dist(output, embeddings, method=dist_method)[dist_method]
+
+
+    #TODO convert distances to similarities
+
+    #Softmax (similarities)
+
+
 
 if __name__ == "__main__":
     
@@ -270,6 +301,11 @@ if __name__ == "__main__":
         for embedding in embeddings:
             embedded_data = embed(data[label], embedding, cache_label = label)
             data[label]["embed"][embedding] = embedded_data
+            print(embedded_data)
+            print(data[label]["embed"][embedding].shape)
+            embed_len = len(embedded_data[0])
+            data[label]["avg_embed"] = np.average(embedded_data, axis=0)
+            #data[label]["avg_embed"] = [sum([e[i] for e in embedded_data])/len(embedded_data) for i in range(embed_len)]
 
 
 
@@ -298,7 +334,7 @@ if __name__ == "__main__":
         e_out = random.choice(data["output"]["embed"][embedding])
 
         out_dists = compute_dist(e_out, data["ONeill"]["embed"][embedding], methods = methods)
-        out_dists_full = compute_dist(e_out, data["ONeill"]["embed"][embedding] + data["output"]["embed"][embedding], methods = methods)
+        out_dists_full = compute_dist(e_out, np.vstack([data["ONeill"]["embed"][embedding], data["output"]["embed"][embedding]]), methods = methods)
 
 
 

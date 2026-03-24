@@ -1,15 +1,19 @@
 import matplotlib.pyplot as plt
 import math
 from sklearn.decomposition import PCA
+import numpy as np
 
 
 from main import compute_dist
 
 def extract_embeddings(data, labels, embedding):
     # Extract the embeddings for the specified labels and embedding type
-    extracted = []
+    extracted = None
     for label in labels:
-        extracted += data[label]["embed"][embedding]
+        if extracted is None:
+            extracted = data[label]["embed"][embedding]
+        else: 
+            extracted = np.vstack([extracted, data[label]["embed"][embedding]])
     return extracted
 
 def plot_embeddings(data, labels = "ONeill", embedding = "clamp", name=None):
