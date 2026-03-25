@@ -62,3 +62,16 @@ attribution: Aggregated normalized cosine distance
 Attribution grouping tests
 averace distance to origin from embedding(euclidean)
 
+
+
+
+26/3 before:
+How to compute attribution?
+Attribution plots
+Folkwiki data concerns
+-  Search " K:"
+- 872: double Meter and L Field
+- 20: 
+   Error in line-char 24-232 : Too many notes in chord - probably missing ']' or '+'
+   
+

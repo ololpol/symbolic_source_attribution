@@ -14,6 +14,9 @@ from transformers import AutoTokenizer
 import pickle
 import numpy as np
 import scipy
+import subprocess
+import glob
+import shutil
 
 target_data_labels = ["ONeill", "output", "Folkwiki","Folkwiki_ONeill_10","Folkwiki_ONeill_20","Folkwiki_ONeill_30","Folkwiki_ONeill_40","Folkwiki_ONeill_50","Folkwiki_ONeill_60","Folkwiki_ONeill_70","Folkwiki_ONeill_80","Folkwiki_ONeill_90","Folkwiki_ONeill_100"] #TODO add more labels here as needed, these should correspond to the folder names in data/wav/
 embeddings = ["clamp"] # options: "clamp", "clap", "muq", "folkrnn", "random"
@@ -53,10 +56,124 @@ def format_abc(tune):
     #print(tune)
     pass#TODO either implement this or do it manually
 
-def ABC2wav(tune):
-    formatted_abc = format_abc(tune)
-    #wav = pysynth.make_wav(formatted_abc) #TODO either implement this or do it manually
-    return "data/wav/sessiontune1170.wav"
+def process_abc(labels, model_name="clap"):
+    """
+    Processes a label by finding its ABC/txt file, converting to MIDI,
+    then to WAV, and applying a specified embedding function to each WAV output.
+    
+    Args:
+        label: The label name to process
+        
+    Returns:
+        A list of results from applying apply() to each WAV file
+    """
+    # Initialize model
+    if model_name == "clap":
+        model = laion_clap.CLAP_Module(enable_fusion=False)
+        model.load_ckpt() # download the default pretrained checkpoint.
+
+
+
+    elif model_name == "muq":
+        model = MuQMuLan.from_pretrained("OpenMuQ/MuQ-MuLan-large")
+        model = model.to(device).eval()
+
+    for label in labels:
+        print("Starting ABC to wav processing for label:", label)
+
+        # 1. Look for <label>.txt or <label>.abc in the data folder
+        txt_path = os.path.join("data", f"{label}.txt")
+        abc_path = os.path.join("data", f"{label}.abc")
+
+        
+        if os.path.exists(abc_path):
+            filename = abc_path
+        elif os.path.exists(txt_path):
+            filename = txt_path
+        else:
+            raise FileNotFoundError(
+                f"No file found for label '{label}'. "
+                f"Expected 'data/{label}.abc' or 'data/{label}.txt'."
+            )
+        print("starting ABC2midi")
+        
+        # 2. Run abc2midi on the found file
+        result = subprocess.run(
+            ["abcmidi/abc2midi", filename],
+            capture_output=True,
+            text=True
+        )
+        #if result.returncode != 0:
+        #    raise RuntimeError(
+        #        f"abc2midi failed for '{filename}':\n{result.stderr}"
+        #    )
+        
+        # 3. Check for/create the output MIDI folder
+        midi_dir = os.path.join("data", "midi", label)
+        os.makedirs(midi_dir, exist_ok=True)
+        
+        # 4. Move all generated .mid files into the folder
+        mid_files = glob.glob(os.path.join("data", "*.mid"))
+        if not mid_files:
+            raise RuntimeError("abc2midi ran successfully but produced no .mid files.")
+        
+        moved_mid_files = []
+        for mid_file in mid_files:
+            dest = os.path.join(midi_dir, os.path.basename(mid_file))
+            shutil.move(mid_file, dest)
+            moved_mid_files.append(dest)
+
+
+        # 5 & 6. Convert each .mid to WAV with timidity, then apply model to the output
+        res = []
+
+        print("Starting processing of", len(moved_mid_files), "files")
+        i = 0
+        for mid_file in moved_mid_files:
+            wav_file = "timidity_temp.wav"
+            
+            timidity_result = subprocess.run(
+                ["timidity", mid_file, "-Ow", "-o", wav_file],
+                capture_output=True,
+                text=True
+            )
+            if timidity_result.returncode != 0:
+                raise RuntimeError(
+                    f"timidity failed for '{mid_file}':\n{timidity_result.stderr}"
+                )
+            
+            # Read the WAV data and apply the processing function
+            with open(wav_file, "rb") as f:
+                wav_data = f.read()
+
+            if model_name=="clap":
+                # Get audio embeddings from audio data
+                audio_data, _ = librosa.load(wav_file, sr=48000) # sample rate should be 48000
+                audio_data = audio_data.reshape(1, -1) # Make it (1,T) or (N,T)
+                audio_embed = model.get_audio_embedding_from_data(x = audio_data, use_tensor=False)
+                #print("Audio embed first 20:", audio_embed[:,-20:])
+                #print("Audio embed shape:", audio_embed.shape)
+                res.append(audio_embed[0])
+            elif model_name == "muq":
+                # Extract music embeddings
+                wav, sr = librosa.load(wav_file, sr = 24000)
+                wavs = torch.tensor(wav).unsqueeze(0).to(device) 
+                with torch.no_grad():
+                    audio_embeds = model(wavs = wavs) 
+
+                # Convert audio_embeds to list and append to res
+                res.append(audio_embeds[0].cpu().numpy().tolist())
+
+            i += 1
+            print(i)
+        
+            # Store res in cache
+        with open("cache/" + cache_file, "wb") as f:
+            pickle.dump(res, f)
+            print("embeddings stored in cache file:", cache_file)
+            cache_file = "embeddings_"+embedding+label+".pkl"
+
+
 
 def load_wav(label = "ONeill"):
     #TODO check all is good
@@ -318,6 +435,8 @@ if __name__ == "__main__":
     # Load abc and wav formats of the data
     data = {}
 
+
+    #process_abc(["Folkwiki_ONeill_20"], "clap")
     for label in target_data_labels:
         data[label] = {}
         if os.path.exists(f"data/{label}.abc"):
@@ -382,6 +501,7 @@ if __name__ == "__main__":
             target_labels.remove(label)
             attribution, id_map, label_map = compute_attribution(data, output_labels=[label], data_labels = target_labels, attribution_method = None, dist_method = "cosine", embedding = embedding, temperature = 0.1)
 
+            plotting.avg_distance_bars(data, [label], target_labels)
             
             plotting.plot_attribution(random.choice(attribution), id_map, label + "_" + embedding)
             plotting.plot_attribution_distribution(data, [label], target_labels, temperature = 0.1)

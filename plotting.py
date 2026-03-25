@@ -335,6 +335,44 @@ def plot_distance_average(data, source_labels = "ONeill", target_labels = None, 
     plt.savefig(f"plots/distance_average_{name}.png")
 
 
+def avg_distance_bars(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", name = None):
+
+    #TODO description
+    if isinstance(source_labels, str):
+        source_labels = [source_labels]
+    if target_labels is None:
+        target_labels = source_labels
+    if isinstance(target_labels, str):
+        target_labels = [target_labels]
+    source_embeddings = extract_embeddings(data, source_labels, embedding)
+
+    if name is None:
+        source_label_str = "-".join(source_labels)
+        name = f"{source_label_str}_{embedding}_{method}"
+
+    res = [0]*len(target_labels)
+    
+    for i, label in enumerate(target_labels):
+        target_embeddings = data[label]["embed"][embedding]
+        n_items = len(target_embeddings) * len(source_embeddings)
+        dists = [0]*len(source_embeddings)
+        for e in source_embeddings:
+            out_dists = compute_dist(e, target_embeddings, method=method)[method]
+            res[i] += np.average(out_dists)
+        res[i] /= n_items
+
+
+
+    plt.clf()
+    plt.bar(target_labels, res)
+    plt.xlabel("Artist")
+    plt.xticks(rotation=30, ha="right")
+    plt.ylabel("Average distance")
+    plt.title(f"Avg distance for {name}")
+    plt.tight_layout()
+    plt.savefig(f"plots/avg_distance_{name}.png")
+
+
 def plot_attribution(attribution, id_map, name):
     #TODO maybe make this work directly on data dict?
 
@@ -365,16 +403,34 @@ def plot_attribution_distribution(data, source_labels = "ONeill", target_labels 
 
     attribution, id_map, _ = compute_attribution(data, source_labels, target_labels, temperature = temperature)
 
-    res = [0]*len(attribution[0])
+    N_artists = len(attribution[0])
+    counts = [0]*N_artists
+    avg = [0]*N_artists
+
+    #TODO could probably do some numpy stuff here
     for i in range(len(attribution)):
         amax = np.argmax(attribution[i])
-        res[amax] += 1
+        counts[amax] += 1
+        for j, e in enumerate(attribution[i]):
+            avg[j] += e
+
+    for i in range(len(avg)):
+        avg[i] = avg[i] / len(attribution)
 
     plt.clf()
-    plt.bar(id_map.values(), res)
+    plt.bar(id_map.values(), counts)
     plt.xlabel("Artist")
     plt.xticks(rotation=30, ha="right")
     plt.ylabel("Number of times attributed")
     plt.title(f"Attribution distribution for {name}")
     plt.tight_layout()
     plt.savefig(f"plots/attribution_distribution_{name}.png")
+
+    plt.clf()
+    plt.bar(id_map.values(), avg)
+    plt.xlabel("Artist")
+    plt.xticks(rotation=30, ha="right")
+    plt.ylabel("Average Attribution")
+    plt.title(f"Average attribution for {name}")
+    plt.tight_layout()
+    plt.savefig(f"plots/attribution_average_{name}.png")
