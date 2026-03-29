@@ -18,7 +18,7 @@ import subprocess
 import glob
 import shutil
 
-target_data_labels = ["ONeill", "output","ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"] #TODO add more labels here as needed, these should correspond to the folder names in data/wav/
+target_data_labels = ["ONeill", "output","ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"] #TODO add more labels here as needed, these should correspond to the txt or abc files in data/
 #target_data_labels = ["ONeill", "output", "Folkwiki"]
 embeddings = ["clamp"] # options: "clamp", "clap", "muq", "folkrnn", "random"
 methods = ["cosine"] # options: "euclidean", "cosine", "cl", "matching", "hamming", "jaccard", "orchini", "sorencen-dice", "tanimoto", "tucker", "tversky"
@@ -34,6 +34,14 @@ else:
     print('No GPU available, using the CPU instead.')
     device = torch.device("cpu")
 
+
+def verify_folder_structure():
+    # Check if the necessary folders exist, and create them if they don't
+    folders = ["data", "data/midi", "data/wav", "cache"]
+    for folder in folders:
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+    plotting.verify_plot_folder()
 
 def load_abc(data_path):
     with open(data_path, 'r') as f:
@@ -87,7 +95,7 @@ def process_abc(labels, model_name="clap"):
         # 1. Look for <label>.txt or <label>.abc in the data folder
         txt_path = os.path.join("data", f"{label}.txt")
         abc_path = os.path.join("data", f"{label}.abc")
-        txt_path_labelled = os.path.join("data", f"{label}:labelled.txt")
+        txt_path_labelled = os.path.join("data", f"{label}_labelled.txt")
         abc_path_labelled = os.path.join("data", f"{label}_labelled.abc")
 
         
@@ -183,17 +191,42 @@ def process_abc(labels, model_name="clap"):
                 print(i, "files processed")
         
             # Store res in cache
-        cache_label = model_name + "_" + label
-        cache_file = "embeddings_"+cache_label+".pkl"
-        with open("cache/" + cache_file, "wb") as f:
-            pickle.dump(res, f)
-            print("embeddings stored in cache file:", cache_file)
+        if model_name == "clap" or model_name == "muq":
+            cache_label = model_name + "_" + label
+            cache_file = "embeddings_"+cache_label+".pkl"
+            with open("cache/" + cache_file, "wb") as f:
+                pickle.dump(res, f)
+                print("embeddings stored in cache file:", cache_file)
 
 
 
 def load_wav(label = "ONeill"):
     #TODO check all is good
     wav_fname = f"data/wav/{label}/"
+    return wav_fname
+
+
+
+def extract_wav(label, id):
+    midi_fname = f"data/midi/{label}/{label}{id}.mid"
+    if not os.path.exists(midi_fname):
+        raise FileNotFoundError(f"No wav file found for label '{label}' and id '{id}'. Expected at '{midi_fname}'")
+    if not os.path.exists(f"data/wav/{label}/"):
+        os.makedirs(f"data/wav/{label}/", exist_ok=True)
+    wav_fname = f"data/wav/{label}/{label}{id}.wav"
+
+    timidity_result = subprocess.run(
+                ["timidity", midi_fname, "-Ow", "-o", wav_fname],
+                capture_output=True,
+                text=True
+            )
+    if timidity_result.returncode != 0:
+        raise RuntimeError(
+            f"timidity failed for '{midi_fname}':\n{timidity_result.stderr}"
+        )
+
+    print(f"wav file extracted for label '{label}' and id '{id}'")
+
     return wav_fname
 
 def embed(data, embedding, use_cache = True, cache_label = ""):
@@ -414,7 +447,6 @@ def compute_attribution(data, output_labels, data_labels = None, attribution_met
             outputs = np.vstack([outputs, data[label]["embed"][embedding]])
     
 
-    #TODO more methods
     res = np.zeros((len(outputs), n_artists))
     for j, output in enumerate(outputs):
         dists = compute_dist(output, embeddings, method=dist_method)
@@ -446,7 +478,7 @@ def compute_attribution(data, output_labels, data_labels = None, attribution_met
 
         attribution = scipy.special.softmax(attribution) #normalize across artists
 
-        #TODO top Y artists, per artist threshold attribution
+        # top Y artists, per artist threshold attribution
         if attribution_threshold is not None:
             attribution = attribution * (attribution > attribution_threshold) #Set attribution to 0 if it is below the threshold
         if top_Y is not None:
@@ -473,7 +505,9 @@ def compute_attribution(data, output_labels, data_labels = None, attribution_met
 
 
 if __name__ == "__main__":
-    
+
+    verify_folder_structure()
+    extract_wav("ONeill_30", 10)
     # Load abc and wav formats of the data
     data = {}
 

@@ -2,10 +2,16 @@ import matplotlib.pyplot as plt
 import math
 from sklearn.decomposition import PCA
 import numpy as np
+import os
 
 
 from main import compute_dist, compute_attribution
 
+def verify_plot_folder():
+    if not os.path.exists("plots"):
+        os.makedirs("plots")
+    
+    #TODO check if a set of subfolders exist in the data folder, and create them if they don't
 def extract_embeddings(data, labels, embedding):
     # Extract the embeddings for the specified labels and embedding type
     extracted = None
@@ -111,7 +117,6 @@ def plot_pca_variance(data, labels = "ONeill", embedding = "clamp", name=None, c
         name = f"{label_str}_{embedding}"
 
 
-    #TODO UHHH this is defenitly wrong?
     pca = PCA(n_components=components)
     pca.fit(embeddings)
 
