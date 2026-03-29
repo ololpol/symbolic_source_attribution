@@ -1,3 +1,8 @@
+import argparse
+parser = argparse.ArgumentParser(description='Process ABC notation data.')
+parser.add_argument('--data_path', type=str, default='data/ONeill.abc', help='Path to the ABC notation data file.')
+args = parser.parse_args()
+
 def load_abc(data_path):
     with open(data_path, 'r') as f:
         data = f.read()
@@ -23,12 +28,14 @@ def load_abc(data_path):
 
 
 
-target_file = "data/allabcdodec_parsed_wot_0"
+target_file = args.data_path
 tunes, _, _ = load_abc(target_file)
 
 
-
-with open(target_file + "_labelled", 'w') as f:
+ending = target_file[-4:]
+print("ending:", ending)
+write_path = target_file[:-4] + "_labelled"+ending
+with open(write_path, 'w') as f:
     i = 0
     for tune in tunes:
         tune = tune.replace(' ', '')

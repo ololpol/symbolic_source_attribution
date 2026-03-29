@@ -201,7 +201,7 @@ def plot_origin_distance(data, labels = "ONeill", embedding = "clamp", method="e
     embed_len = len(embeddings[0])
     origin = [0]*embed_len
 
-    dists = compute_dist(origin, embeddings, method=method)[method]
+    dists = compute_dist(origin, embeddings, method=method)
     dist_max = max(dists)
 
     t_steps = math.ceil(dist_max/t_step)
@@ -234,7 +234,7 @@ def plot_centroid_distance(data, labels = "ONeill", embedding = "clamp", method=
 
     centroid = [sum([e[i] for e in embeddings])/len(embeddings) for i in range(embed_len)]
     
-    dists = compute_dist(centroid, embeddings, method=method)[method]
+    dists = compute_dist(centroid, embeddings, method=method)
     dist_max = max(dists)
 
     t_steps = math.ceil(dist_max/t_step)
@@ -307,7 +307,7 @@ def plot_distance_average(data, source_labels = "ONeill", target_labels = None, 
     dists = []
     for e in source_embeddings:
         out_dists = compute_dist(e, target_embeddings, method=method)
-        dists.append(out_dists[method])
+        dists.append(out_dists)
 
     N = len(dists) # = len(source_embeddings)
     
@@ -357,7 +357,7 @@ def avg_distance_bars(data, source_labels = "ONeill", target_labels = None, embe
         n_items = len(target_embeddings) * len(source_embeddings)
         dists = [0]*len(source_embeddings)
         for e in source_embeddings:
-            out_dists = compute_dist(e, target_embeddings, method=method)[method]
+            out_dists = compute_dist(e, target_embeddings, method=method)
             res[i] += np.average(out_dists)
         res[i] /= n_items
 

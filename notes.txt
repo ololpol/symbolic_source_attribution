@@ -19,9 +19,8 @@ python clamp.py -clamp_model_name sander-wood/clamp-small-512 -query_modal music
  - Folkrnn embed
  - Test everything
     - Order of items should always be the same
- - data processing script stuff?
-   - all steps to not have to store wav files
  - distance plot bin sizes
+ - Extract(label, id) to convert a specific data item to a wav file
 
 
 
@@ -73,5 +72,15 @@ Folkwiki data concerns
 - 872: double Meter and L Field
 - 20: 
    Error in line-char 24-232 : Too many notes in chord - probably missing ']' or '+'
-   
+- vocabulary size 156 vs 63(ONeill) vs 46(output)
 
+
+
+top N plot
+threshold plot (parameters in plotting), 1/2, 1/e score
+find specific good matching music pieces
+todos
+find specific closes tunes to x
+behavior of modified/transposed tunes
+modified tune: part A from 1 tune, bart B from another
+sim computations

@@ -18,7 +18,8 @@ import subprocess
 import glob
 import shutil
 
-target_data_labels = ["ONeill", "output", "Folkwiki","Folkwiki_ONeill_10","Folkwiki_ONeill_20","Folkwiki_ONeill_30","Folkwiki_ONeill_40","Folkwiki_ONeill_50","Folkwiki_ONeill_60","Folkwiki_ONeill_70","Folkwiki_ONeill_80","Folkwiki_ONeill_90","Folkwiki_ONeill_100"] #TODO add more labels here as needed, these should correspond to the folder names in data/wav/
+target_data_labels = ["ONeill", "output","ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"] #TODO add more labels here as needed, these should correspond to the folder names in data/wav/
+#target_data_labels = ["ONeill", "output", "Folkwiki"]
 embeddings = ["clamp"] # options: "clamp", "clap", "muq", "folkrnn", "random"
 methods = ["cosine"] # options: "euclidean", "cosine", "cl", "matching", "hamming", "jaccard", "orchini", "sorencen-dice", "tanimoto", "tucker", "tversky"
 CLAMP_MODEL_NAME = "sander-wood/clamp-small-512"
@@ -52,9 +53,11 @@ def load_abc(data_path):
 
     return tunes, idx2token, token2idx
 
-def format_abc(tune):
-    #print(tune)
-    pass#TODO either implement this or do it manually
+def format_abc(filename):
+    """
+    Formats the tunes in a file in a way that can be processed by abc2midi. This may involve adding necessary headers, ensuring correct spacing, etc.
+    """
+    subprocess.run(["python", "abc_processing.py", "--data_path", filename])
 
 def process_abc(labels, model_name="clap"):
     """
@@ -84,16 +87,27 @@ def process_abc(labels, model_name="clap"):
         # 1. Look for <label>.txt or <label>.abc in the data folder
         txt_path = os.path.join("data", f"{label}.txt")
         abc_path = os.path.join("data", f"{label}.abc")
+        txt_path_labelled = os.path.join("data", f"{label}:labelled.txt")
+        abc_path_labelled = os.path.join("data", f"{label}_labelled.abc")
 
         
-        if os.path.exists(abc_path):
-            filename = abc_path
+        if os.path.exists(abc_path_labelled):
+            filename = abc_path_labelled
+        elif os.path.exists(txt_path_labelled):
+            filename = txt_path_labelled
+        elif os.path.exists(abc_path):
+            print("formatting from ", abc_path)
+            format_abc(abc_path)
+            filename = abc_path_labelled
         elif os.path.exists(txt_path):
-            filename = txt_path
+            print("formatting from ", txt_path)
+            format_abc(txt_path)
+            filename = txt_path_labelled
         else:
             raise FileNotFoundError(
                 f"No file found for label '{label}'. "
                 f"Expected 'data/{label}.abc' or 'data/{label}.txt'."
+                f"Or labelled data {abc_path_labelled} or {txt_path_labelled}"
             )
         print("starting ABC2midi")
         
@@ -165,13 +179,15 @@ def process_abc(labels, model_name="clap"):
                 res.append(audio_embeds[0].cpu().numpy().tolist())
 
             i += 1
-            print(i)
+            if i % 10 == 0:
+                print(i, "files processed")
         
             # Store res in cache
+        cache_label = model_name + "_" + label
+        cache_file = "embeddings_"+cache_label+".pkl"
         with open("cache/" + cache_file, "wb") as f:
             pickle.dump(res, f)
             print("embeddings stored in cache file:", cache_file)
-            cache_file = "embeddings_"+embedding+label+".pkl"
 
 
 
@@ -313,71 +329,61 @@ def folkrnn_embed(tunes):
         pass#TODO
     return res
 
-def compute_dist(e1, data, methods = [], method = None):
-    if methods != [] and method != None:
-        raise ValueError("Either methods or method should be provided, not both")
-    if methods == []:
-        if method == None:
-            raise ValueError("Either methods or method should be provided")
-        methods = [method]
-    
-    res = {} #TODO idk if this helps
-    for m in methods:
-        if m == "euclidean":
-            # TODO do this with numpy for efficiency
-            dists = []
-            for e2 in data:
-                dist = sum([(a-b)**2 for a,b in zip(e1,e2)])**0.5
-                dists.append(np.array(dist))
-        elif m == "cosine":
-            # Cosine distances
-            # TODO do this with numpy for efficiency
-            dists = np.zeros(len(data))
-            for i, e2 in enumerate(data):
-                
-                dist = scipy.spatial.distance.cosine(e1, e2)
-                dists[i] = dist
-                
-                
-                #dot_product = sum([a*b for a,b in zip(e1,e2)])
-                #norm_e1 = sum([a**2 for a in e1])**0.5
-                #norm_e2 = sum([b**2 for b in e2])**0.5
-                #dist = 1 - dot_product / (norm_e1 * norm_e2)
-                #dists.append(np.array(dist))
-        elif m == "cl":
-            #Contrastive learning encoding distance
-            pass
-        elif m == "matching":
-            # Simple Matching Coefficient
-            pass # binary vectors
-        elif m == "hamming":
-            # Hamming distance
-            pass # binary vectors?
-        elif m == "jaccard":
-            # Jaccard index
-            pass # For sets?
-        elif m == "orchini":
-            # Orchini similarity
-            pass # i guess this is just cosine similarity?
-        elif m == "sorencen-dice":
-            # F1 score?
-            pass
-        elif m == "tanimoto":
-            # Tanimoto distance
-            pass #binary sets?
-        elif m == "tucker":
-            # Tucker coefficient of congruence
-            pass # i guess this is just cosine similarity?
-        elif m == "tversky":
-            # Tversky index
-            pass # For sets
-        else:
-            raise ValueError("Unsupported distance method: {}".format(m))
-        res[m] = dists
-    return res
+def compute_dist(e1, data, method):
+    if method == "euclidean":
+        # TODO do this with numpy for efficiency
+        dists = []
+        for e2 in data:
+            dist = sum([(a-b)**2 for a,b in zip(e1,e2)])**0.5
+            dists.append(np.array(dist))
+    elif method == "cosine":
+        # Cosine distances
+        # TODO do this with numpy for efficiency
+        dists = np.zeros(len(data))
+        for i, e2 in enumerate(data):
+            
+            dist = scipy.spatial.distance.cosine(e1, e2)
+            dists[i] = dist
+            
+            
+            #dot_product = sum([a*b for a,b in zip(e1,e2)])
+            #norm_e1 = sum([a**2 for a in e1])**0.5
+            #norm_e2 = sum([b**2 for b in e2])**0.5
+            #dist = 1 - dot_product / (norm_e1 * norm_e2)
+            #dists.append(np.array(dist))
+    elif method == "cl":
+        #Contrastive learning encoding distance
+        pass
+    elif method == "matching":
+        # Simple Matching Coefficient
+        pass # binary vectors
+    elif method == "hamming":
+        # Hamming distance
+        pass # binary vectors?
+    elif method == "jaccard":
+        # Jaccard index
+        pass # For sets?
+    elif method == "orchini":
+        # Orchini similarity
+        pass # i guess this is just cosine similarity?
+    elif method == "sorencen-dice":
+        # F1 score?
+        pass
+    elif method == "tanimoto":
+        # Tanimoto distance
+        pass #binary sets?
+    elif method == "tucker":
+        # Tucker coefficient of congruence
+        pass # i guess this is just cosine similarity?
+    elif method == "tversky":
+        # Tversky index
+        pass # For sets
+    else:
+        raise ValueError("Unsupported distance method: {}".format(m))
+    return dists
 
 
-def compute_attribution(data, output_labels, data_labels = None, attribution_method = None, dist_method = "cosine", embedding = "clamp", temperature = 1):
+def compute_attribution(data, output_labels, data_labels = None, attribution_method = None, dist_method = "cosine", embedding = "clamp", top_N = None, dist_threshold = None, top_Y = None, attribution_threshold = None):
     # Compute attribution scores the output embedding with respect to the data embeddings using the specified method
     
     #TODO more ways to do this
@@ -408,11 +414,28 @@ def compute_attribution(data, output_labels, data_labels = None, attribution_met
             outputs = np.vstack([outputs, data[label]["embed"][embedding]])
     
 
+    #TODO more methods
     res = np.zeros((len(outputs), n_artists))
     for j, output in enumerate(outputs):
-        dists = compute_dist(output, embeddings, method=dist_method)[dist_method]
+        dists = compute_dist(output, embeddings, method=dist_method)
 
-        sims = np.exp(-np.array(dists)/temperature)
+        #sims = np.exp(-np.array(dists)/temperature)
+        sims = 1 - dists
+        #TODO check this
+        #cos theta + 1
+        #e ^ (1-d)
+        #1 - d
+
+
+        # top N of distances, per item distance thresold
+        if dist_threshold is not None:
+            sims = sims * (sims > dist_threshold) #Set sims to 0 if distance is below threshold
+        if top_N is not None:
+            top_indices = np.argsort(dists)[:top_N]
+            sims = sims[top_indices]
+            ids_top = [ids[i] for i in top_indices]
+            ids = ids_top
+
 
         attribution = np.zeros(n_artists)
         for i in range(len(sims)):
@@ -421,9 +444,28 @@ def compute_attribution(data, output_labels, data_labels = None, attribution_met
         for i in range(len(attribution)):
             attribution[i] /= ns[i] #normalize per artist
 
+        attribution = scipy.special.softmax(attribution) #normalize across artists
+
+        #TODO top Y artists, per artist threshold attribution
+        if attribution_threshold is not None:
+            attribution = attribution * (attribution > attribution_threshold) #Set attribution to 0 if it is below the threshold
+        if top_Y is not None:
+            top_indices = np.argsort(attribution)[:top_Y]
+            for i in range(len(attribution)):
+                if i not in top_indices:
+                    attribution[i] = 0
+        
+        if top_Y is not None or attribution_threshold is not None:
+            attribution = scipy.special.softmax(attribution) #normalize across artists
+
+
+        attribution = scipy.special.softmax(attribution) #normalize across artists
         res[j] = attribution
     
     res = scipy.special.softmax(res, axis=1) #normalize across artists
+
+
+    #TODO how to convert this to artist choice
 
     return res, id_map, label_map
 
@@ -435,8 +477,7 @@ if __name__ == "__main__":
     # Load abc and wav formats of the data
     data = {}
 
-
-    #process_abc(["Folkwiki_ONeill_20"], "clap")
+    #process_abc(["ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"], "muq")
     for label in target_data_labels:
         data[label] = {}
         if os.path.exists(f"data/{label}.abc"):
@@ -479,24 +520,21 @@ if __name__ == "__main__":
 
         e_out = random.choice(data["output"]["embed"][embedding])
 
-        out_dists = compute_dist(e_out, data["ONeill"]["embed"][embedding], methods = methods)
-        out_dists_full = compute_dist(e_out, np.vstack([data["ONeill"]["embed"][embedding], data["output"]["embed"][embedding]]), methods = methods)
+        for method in methods:
+            out_dists = compute_dist(e_out, data["ONeill"]["embed"][embedding], method)
+            out_dists_full = compute_dist(e_out, np.vstack([data["ONeill"]["embed"][embedding], data["output"]["embed"][embedding]]), method)
 
 
 
-        for m in out_dists.keys():
             plotting.plot_origin_distance(data, "ONeill", embedding, method="euclidean", t_step=0.01)
             plotting.plot_centroid_distance(data, "ONeill", embedding, method="euclidean", t_step=0.01)
-            plotting.plot_distance_distribution(out_dists[m], embedding+"_"+m, t_step=0.01)
-            plotting.plot_distance_distribution(out_dists_full[m], embedding+"_full_"+m, t_step=0.01)
+            plotting.plot_distance_distribution(out_dists, embedding+"_"+m, t_step=0.01)
+            plotting.plot_distance_distribution(out_dists_full, embedding+"_full_"+m, t_step=0.01)
 
-        
 
-        #TODO look at temperature
 
 
         for label in target_data_labels:
-                
             target_labels = target_data_labels.copy()
             target_labels.remove(label)
             attribution, id_map, label_map = compute_attribution(data, output_labels=[label], data_labels = target_labels, attribution_method = None, dist_method = "cosine", embedding = embedding, temperature = 0.1)
