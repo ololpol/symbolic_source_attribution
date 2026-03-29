@@ -385,7 +385,7 @@ def plot_attribution(attribution, id_map, name):
     plt.tight_layout()
     plt.savefig(f"plots/attribution_{name}.png")
 
-def plot_attribution_distribution(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", temperature = 1, name=None):
+def plot_attribution_distribution(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", name=None):
     
 
     if isinstance(source_labels, str):
@@ -401,7 +401,7 @@ def plot_attribution_distribution(data, source_labels = "ONeill", target_labels 
         source_str = "-".join(source_labels)
         name = f"{source_str}_{embedding}_{method}"
 
-    attribution, id_map, _ = compute_attribution(data, source_labels, target_labels, temperature = temperature)
+    attribution, id_map, _ = compute_attribution(data, source_labels, target_labels)
 
     N_artists = len(attribution[0])
     counts = [0]*N_artists

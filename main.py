@@ -537,12 +537,12 @@ if __name__ == "__main__":
         for label in target_data_labels:
             target_labels = target_data_labels.copy()
             target_labels.remove(label)
-            attribution, id_map, label_map = compute_attribution(data, output_labels=[label], data_labels = target_labels, attribution_method = None, dist_method = "cosine", embedding = embedding, temperature = 0.1)
+            attribution, id_map, label_map = compute_attribution(data, output_labels=[label], data_labels = target_labels, attribution_method = None, dist_method = "cosine", embedding = embedding)
 
             plotting.avg_distance_bars(data, [label], target_labels)
             
             plotting.plot_attribution(random.choice(attribution), id_map, label + "_" + embedding)
-            plotting.plot_attribution_distribution(data, [label], target_labels, temperature = 0.1)
+            plotting.plot_attribution_distribution(data, [label], target_labels)
 
         
         
