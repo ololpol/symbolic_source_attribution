@@ -3,6 +3,8 @@ parser = argparse.ArgumentParser(description='Process ABC notation data.')
 parser.add_argument('--data_path', type=str, default='data/ONeill.abc', help='Path to the ABC notation data file.')
 args = parser.parse_args()
 
+#python abc_processing.py --data_path data/ONeill.abc
+
 def load_abc(data_path):
     with open(data_path, 'r') as f:
         data = f.read()

@@ -6,7 +6,6 @@ import random
 import librosa
 import torch
 from muq import MuQ, MuQMuLan
-import laion_clap
 import matplotlib.pyplot as plt
 import plotting
 from clamp_utils import *
@@ -18,13 +17,14 @@ import subprocess
 import glob
 import shutil
 
-target_data_labels = ["ONeill", "output","ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"] #TODO add more labels here as needed, these should correspond to the txt or abc files in data/
+target_data_labels = ["ONeill","ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"] #TODO add more labels here as needed, these should correspond to the txt or abc files in data/
+secondary_labels = []  #Labels that should not be used to generate main plots
 #target_data_labels = ["ONeill", "output", "Folkwiki"]
-embeddings = ["clamp"] # options: "clamp", "clap", "muq", "folkrnn", "random"
+embeddings = ["clamp", "muq", "clap"] # options: "clamp", "clap", "muq", "folkrnn", "random"
 methods = ["cosine"] # options: "euclidean", "cosine", "cl", "matching", "hamming", "jaccard", "orchini", "sorencen-dice", "tanimoto", "tucker", "tversky"
 CLAMP_MODEL_NAME = "sander-wood/clamp-small-512"
 
-
+random.seed(61)
 if torch.cuda.is_available():    
     device = torch.device("cuda")
     print('There are %d GPU(s) available.' % torch.cuda.device_count())
@@ -200,15 +200,26 @@ def process_abc(labels, model_name="clap"):
 
 
 
-def load_wav(label = "ONeill"):
-    #TODO check all is good
+def assure_wav(label = "ONeill"):
+    #TODO use this?
     wav_fname = f"data/wav/{label}/"
+
+    if not os.path.exists(wav_fname):
+        raise FileNotFoundError(f"No wav folder found for label '{label}'. Expected at '{wav_fname}'")
+
+    # Check if wav folder is empty
+    folder_files = os.listdir(wav_fname)
+    folder_files = [f for f in folder_files if f.endswith(".wav")]
+    if len(folder_files) == 0:
+        raise FileNotFoundError(f"Wav folder for label '{label}' is empty. Expected wav files in '{wav_fname}'")
+
+
     return wav_fname
 
 
 
 def extract_wav(label, id):
-    midi_fname = f"data/midi/{label}/{label}{id}.mid"
+    midi_fname = f"data/midi/{label}/{label}_labelled{id}.mid"
     if not os.path.exists(midi_fname):
         raise FileNotFoundError(f"No wav file found for label '{label}' and id '{id}'. Expected at '{midi_fname}'")
     if not os.path.exists(f"data/wav/{label}/"):
@@ -225,7 +236,7 @@ def extract_wav(label, id):
             f"timidity failed for '{midi_fname}':\n{timidity_result.stderr}"
         )
 
-    print(f"wav file extracted for label '{label}' and id '{id}'")
+    #print(f"wav file extracted for label '{label}' and id '{id}'")
 
     return wav_fname
 
@@ -296,6 +307,8 @@ def clamp(tunes):
     return res
 
 def clap(tune_fname):
+    import laion_clap
+
     res = []
 
     fnames = os.listdir(tune_fname)
@@ -362,21 +375,29 @@ def folkrnn_embed(tunes):
         pass#TODO
     return res
 
-def compute_dist(e1, data, method):
+def compute_dist(source, data, method):
+    if isinstance(source[0], float) or isinstance(source[0], int):
+        source = [source]
+
+    
     if method == "euclidean":
         # TODO do this with numpy for efficiency
         dists = []
-        for e2 in data:
-            dist = sum([(a-b)**2 for a,b in zip(e1,e2)])**0.5
-            dists.append(np.array(dist))
+        for e1 in source:
+            dists_d = []
+            for e2 in data:
+                dist = sum([(a-b)**2 for a,b in zip(e1,e2)])**0.5
+                dists_d.append(dist)
+            dists.append(dists_d)
+        dists = np.array(dists)
     elif method == "cosine":
         # Cosine distances
         # TODO do this with numpy for efficiency
-        dists = np.zeros(len(data))
-        for i, e2 in enumerate(data):
-            
-            dist = scipy.spatial.distance.cosine(e1, e2)
-            dists[i] = dist
+        dists = np.zeros((len(source), len(data)))
+        for i, e1 in enumerate(source):
+            for j, e2 in enumerate(data):
+                dist = scipy.spatial.distance.cosine(e1, e2)
+                dists[i, j] = dist
             
             
             #dot_product = sum([a*b for a,b in zip(e1,e2)])
@@ -413,21 +434,30 @@ def compute_dist(e1, data, method):
         pass # For sets
     else:
         raise ValueError("Unsupported distance method: {}".format(m))
+
     return dists
 
 
-def compute_attribution(data, output_labels, data_labels = None, attribution_method = None, dist_method = "cosine", embedding = "clamp", top_N = None, dist_threshold = None, top_Y = None, attribution_threshold = None):
+def compute_attribution(data, output_labels, data_labels = None, attribution_method = None, dist_method = "cosine", embedding = "clamp",
+    top_N = None, dist_threshold = None, top_Y = None, attribution_threshold = None, extract_N = None, extract_write = True):
     # Compute attribution scores the output embedding with respect to the data embeddings using the specified method
-    
+
     #TODO more ways to do this
     
     id_map = {}
     label_map = {}
     ids = []
     ns = []
+
+
     n_artists = len(data_labels)
     embeddings = None
     i = 0
+
+    if data_labels is None:
+        data_labels = output_labels
+
+    # Flatten the data embeddings from different labels/artists and create id and label maps
     for label in data_labels:
         if embeddings is None:
             embeddings = data[label]["embed"][embedding]
@@ -439,66 +469,137 @@ def compute_attribution(data, output_labels, data_labels = None, attribution_met
         ns.append(len(data[label]["embed"][embedding]))
         i += 1
 
+
+
+    
+    #print("id_map: ", id_map)
+    #print("label_map: ", label_map)
+    #print("ids: ", ids)
+    #print("ns: ", ns)
+
     outputs = None
     for label in output_labels:
         if outputs is None:
             outputs = data[label]["embed"][embedding]
         else:
             outputs = np.vstack([outputs, data[label]["embed"][embedding]])
+    #print("embeddings shape: ", embeddings.shape)
+
+    #print("outputs shape: ", outputs.shape)
     
 
     res = np.zeros((len(outputs), n_artists))
-    for j, output in enumerate(outputs):
-        dists = compute_dist(output, embeddings, method=dist_method)
+    dists = None
+    dists = compute_dist(outputs, embeddings, method=dist_method)
+    #for j, output in enumerate(outputs):
+    #    dists_j = compute_dist(output, embeddings, method=dist_method)
+    #    if dists is None:
+    #        dists = np.array(dists_j)
+    #    else:
+    #        dists = np.vstack([dists, dists_j])
+    #print("dists shape: ", dists.shape)
 
+
+    dists_flat = dists.flatten()
+    #print("Distance stats: min {}, max {}, mean {}, median {}".format(np.min(dists_flat), np.max(dists_flat), np.mean(dists_flat), np.median(dists_flat)))
+    
+
+    if extract_N is not None:
+        extracted = []
+        if extract_write:
+            out_filename = "_".join(output_labels) + ".txt"
+            out_filename = "plots/distances/" + out_filename
+            out_file = open(out_filename, "w")
+            out_file.write("Extracting top {} closest items for each output embedding with distance threshold {}\n\n".format(extract_N, dist_threshold))
+            out_file.write("Distance stats: min {}, max {}, mean {}, median {}\n\n".format(np.min(dists_flat), np.max(dists_flat), np.mean(dists_flat), np.median(dists_flat)))
+            target_string = "_".join(data_labels)
+            source_string = "_".join(output_labels)
+            out_file.write("Evaluating distances from {} to {} using embedding '{}' and distance method '{}'\n\n".format(source_string, target_string, embedding, dist_method))
+        
+    
+
+    for j, output in enumerate(outputs):
         #sims = np.exp(-np.array(dists)/temperature)
-        sims = 1 - dists
+        dist_j = dists[j]
         #TODO check this
         #cos theta + 1
         #e ^ (1-d)
         #1 - d
 
-
         # top N of distances, per item distance thresold
+        if extract_N is not None:
+            extract_j = []
+            if extract_write:
+                out_file.write(f"Item {j+1}\n")
+            top_indices = np.argsort(dist_j)[:extract_N]
+            for e in top_indices:
+                id = ids[e]
+                label = id_map[id]
+                pos = e - sum(ns[:id]) + 1
+                if extract_write:
+                    extract_wav(label, pos)
+                    out_file.write(f"label '{label}' and id '{pos}'\n")
+                    out_file.write("Dist: " + str(dist_j[e]) + "\n")
+                extract_j.append((label, pos, dist_j[e]))
+            extracted.append(extract_j)
+
         if dist_threshold is not None:
-            sims = sims * (sims > dist_threshold) #Set sims to 0 if distance is below threshold
+            dist_j[dist_j > dist_threshold] = 1 # Set distances above the threshold to 1 (max distance)
         if top_N is not None:
-            top_indices = np.argsort(dists)[:top_N]
-            sims = sims[top_indices]
-            ids_top = [ids[i] for i in top_indices]
-            ids = ids_top
-
-
-        attribution = np.zeros(n_artists)
-        for i in range(len(sims)):
-            attribution[ids[i]] += sims[i]
+            top_indices = np.argsort(dist_j)[:top_N]
+            # Set all distances not in the top N to 1 (max distance)
+            mask = np.ones_like(dist_j, dtype=bool)
+            mask[top_indices] = False
+            dist_j[mask] = 1
         
+
+
+        #TODO other methods to convert this     
+        sims_j = 1 - dist_j 
+        #print(f"sims_j stats: min {np.min(sims_j)}, max {np.max(sims_j)}, mean {np.mean(sims_j)}, median {np.median(sims_j)}")
+        #print("Nr of nonzero sims_j:", np.sum(sims_j > 0))
+
+        #print("sims shape:", sims_j.shape)
+        attribution = np.zeros(n_artists)
+        for i in range(len(sims_j)):
+            #if (sims_j[i] > 0):
+            #    print("attribution", ids[i],"increased by", sims_j[i], "element", i)
+            attribution[ids[i]] += sims_j[i]
+        
+        #print("raw attribution for output {}: {}".format(j, attribution))
         for i in range(len(attribution)):
             attribution[i] /= ns[i] #normalize per artist
 
-        attribution = scipy.special.softmax(attribution) #normalize across artists
+        #print("pre softmax: ", attribution)
+
+        if np.sum(attribution) > 0:
+            attribution = attribution / np.sum(attribution) #normalize across artists
+        else:
+            print("Warning: attribution sum is 0. Cannot normalize")
+        #attribution = scipy.special.softmax(attribution) #normalize across artists
 
         # top Y artists, per artist threshold attribution
         if attribution_threshold is not None:
             attribution = attribution * (attribution > attribution_threshold) #Set attribution to 0 if it is below the threshold
         if top_Y is not None:
-            top_indices = np.argsort(attribution)[:top_Y]
+            top_indices = np.argsort(attribution)[-top_Y:]
             for i in range(len(attribution)):
                 if i not in top_indices:
                     attribution[i] = 0
         
         if top_Y is not None or attribution_threshold is not None:
-            attribution = scipy.special.softmax(attribution) #normalize across artists
+            attribution = attribution / np.sum(attribution) #normalize across artists
 
 
-        attribution = scipy.special.softmax(attribution) #normalize across artists
+        #print("post softmax: ", attribution)
         res[j] = attribution
     
-    res = scipy.special.softmax(res, axis=1) #normalize across artists
 
 
-    #TODO how to convert this to artist choice
-
+    if extract_N is not None and extract_write:
+        out_file.close()
+    if extract_N is not None:
+        return res, id_map, label_map, extracted
     return res, id_map, label_map
 
 
@@ -507,12 +608,13 @@ def compute_attribution(data, output_labels, data_labels = None, attribution_met
 if __name__ == "__main__":
 
     verify_folder_structure()
-    extract_wav("ONeill_30", 10)
     # Load abc and wav formats of the data
     data = {}
 
-    #process_abc(["ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"], "muq")
-    for label in target_data_labels:
+    #process_abc(secondary_labels, model_name="muq")
+    #process_abc(secondary_labels, model_name="clap")
+
+    for label in target_data_labels + secondary_labels:
         data[label] = {}
         if os.path.exists(f"data/{label}.abc"):
             data[label]["abc"], _, _ = load_abc(f"data/{label}.abc")
@@ -520,7 +622,7 @@ if __name__ == "__main__":
             data[label]["abc"], _, _ = load_abc(f"data/{label}.txt")
         else:
             raise ValueError(f"No abc or txt file found for label {label} in data folder")
-        data[label]["wav"] = load_wav(label)
+        data[label]["wav"] = f"data/wav/{label}/"
         data[label]["embed"] = {}
         for embedding in embeddings:
             embedded_data = embed(data[label], embedding, cache_label = label)
@@ -531,8 +633,8 @@ if __name__ == "__main__":
             #data[label]["avg_embed"] = [sum([e[i] for e in embedded_data])/len(embedded_data) for i in range(embed_len)]
 
 
-
-    for embedding in embeddings:
+    #plotting.compute_attribution(data, output_labels=["special"], data_labels=target_data_labels, embedding="clamp", dist_method="cosine", extract_N=5)
+    for embedding in embeddings: 
         # Embed the data using the specified embedding method
 
         plotting.plot_embeddings(data, "ONeill", embedding)
@@ -544,19 +646,20 @@ if __name__ == "__main__":
 
 
         for m in methods:
-            break
-            plotting.plot_distance_average(data, "ONeill", "ONeill", embedding, method=m)
-            plotting.plot_distance_average(data, ["ONeill", "output"], ["ONeill", "output"], embedding, method=m)
-            plotting.plot_distance_average(data, "ONeill", "output", embedding, method=m)
-            plotting.plot_distance_average(data, "output", "ONeill", embedding, method=m)
+            for label1 in target_data_labels:
+                for label2 in target_data_labels:
+                    plotting.plot_distance_average(data, label1, label2, embedding, method=m)
 
 
 
-        e_out = random.choice(data["output"]["embed"][embedding])
+        e_out = random.choice(data["ONeill_100"]["embed"][embedding])
 
         for method in methods:
-            out_dists = compute_dist(e_out, data["ONeill"]["embed"][embedding], method)
-            out_dists_full = compute_dist(e_out, np.vstack([data["ONeill"]["embed"][embedding], data["output"]["embed"][embedding]]), method)
+            print("e_out:", e_out)
+            print("e_out shape:", e_out.shape)
+            out_dists = compute_dist(e_out, data["ONeill"]["embed"][embedding], method)[0]
+            print("OD:", out_dists, out_dists.shape) 
+            out_dists_full = compute_dist(e_out, np.vstack([data["ONeill"]["embed"][embedding], data["ONeill_100"]["embed"][embedding]]), method)[0]
 
 
 
@@ -566,17 +669,47 @@ if __name__ == "__main__":
             plotting.plot_distance_distribution(out_dists_full, embedding+"_full_"+m, t_step=0.01)
 
 
-
-
         for label in target_data_labels:
             target_labels = target_data_labels.copy()
-            target_labels.remove(label)
-            attribution, id_map, label_map = compute_attribution(data, output_labels=[label], data_labels = target_labels, attribution_method = None, dist_method = "cosine", embedding = embedding)
+            attribution, id_map, label_map, extracted = compute_attribution(data, output_labels=[label], data_labels = target_labels, attribution_method = None, dist_method = "cosine", embedding = embedding, extract_N=999, extract_write=False)
+            #print("extracted:", extracted)
+            e = random.randint(0, len(extracted)-1)
+            name = label + "_" + embedding + "_item_" + str(e)
+            plotting.plot_min_pos(extracted[e], id_map, label_map, name)
+        attribution_configs = [  #top_N, dist_threshold, top_Y, attribution_threshold
+            [None, None, None, None],
+            [5, None, None, None],
+            [10, None, None, None],
+            [None, 0.5, None, None],
+            [None, None, 3, None]
+        ]
+        for config in attribution_configs:
+            top_N = config[0]
+            dist_threshold = config[1]
+            top_Y = config[2]
+            attribution_threshold = config[3]
+            config_label = ""
+            if config[0] is not None:
+                config_label += "N="+str(config[0])+"_"
+            if config[1] is not None:
+                config_label += "D_T="+str(config[1])+"_"
+            if config[2] is not None:
+                config_label += "Y="+str(config[2])+"_"
+            if config[3] is not None:
+                config_label += "A_T="+str(config[3])+"_"
+            if config_label == "":
+                config_label = "none"
+            plotting.verify_plot_folder(subfolder = config_label)
 
-            plotting.avg_distance_bars(data, [label], target_labels)
-            
-            plotting.plot_attribution(random.choice(attribution), id_map, label + "_" + embedding)
-            plotting.plot_attribution_distribution(data, [label], target_labels)
+            for label in target_data_labels:
+                target_labels = target_data_labels.copy()
+                target_labels.remove(label)
+                attribution, id_map, label_map = compute_attribution(data, output_labels=[label], data_labels = target_labels, attribution_method = None, dist_method = "cosine", embedding = embedding, top_N = config[0], dist_threshold=config[1], top_Y=config[2], attribution_threshold=config[3])
+
+                plotting.avg_distance_bars(data, [label], target_labels, embedding)
+                
+                plotting.plot_attribution(random.choice(attribution), id_map, label + "_" + embedding, config_label = config_label)
+                plotting.plot_attribution_distribution(data, [label], target_labels, embedding, top_N = config[0], dist_threshold=config[1], top_Y=config[2], attribution_threshold=config[3], config_label = config_label)
 
         
         

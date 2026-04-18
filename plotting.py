@@ -7,10 +7,18 @@ import os
 
 from main import compute_dist, compute_attribution
 
-def verify_plot_folder():
+def verify_plot_folder(subfolder = None):
     if not os.path.exists("plots"):
-        os.makedirs("plots")
-    
+        os.makedirs("plots", exist_ok=True)
+
+    if not os.path.exists("plots/embeddings"):
+        os.makedirs("plots/embeddings", exist_ok=True)
+    if not os.path.exists("plots/distances"):
+        os.makedirs("plots/distances", exist_ok=True)
+    if not os.path.exists("plots/attribution"):
+        os.makedirs("plots/attribution", exist_ok=True)
+    if subfolder is not None:
+        os.makedirs("plots/attribution/"+subfolder, exist_ok=True)
     #TODO check if a set of subfolders exist in the data folder, and create them if they don't
 def extract_embeddings(data, labels, embedding):
     # Extract the embeddings for the specified labels and embedding type
@@ -53,7 +61,7 @@ def plot_embeddings(data, labels = "ONeill", embedding = "clamp", name=None):
     plt.xlabel('Dimension 1')
     plt.ylabel('Dimension 2')
     plt.grid()
-    plt.savefig(f"plots/embeddings_{name}.png")
+    plt.savefig(f"plots/embeddings/{name}.png")
 
 
 def plot_embeddings_pca(data, labels = "ONeill", embedding = "clamp", name=None, components=5):
@@ -81,7 +89,7 @@ def plot_embeddings_pca(data, labels = "ONeill", embedding = "clamp", name=None,
     pca = PCA(n_components=components)
     reduced_embeddings = pca.fit_transform(embeddings)
 
-    print("PCA VR:", pca.explained_variance_ratio_)
+    #print("PCA VR:", pca.explained_variance_ratio_)
 
 
     plt.clf()
@@ -93,7 +101,7 @@ def plot_embeddings_pca(data, labels = "ONeill", embedding = "clamp", name=None,
     plt.xlabel('Principal Component 1')
     plt.ylabel('Principal Component 2')
     plt.grid()
-    plt.savefig(f"plots/embeddings_pca_{name}.png")
+    plt.savefig(f"plots/embeddings/pca_{name}.png")
 
 def plot_pca_variance(data, labels = "ONeill", embedding = "clamp", name=None, components=5):
     """
@@ -134,7 +142,7 @@ def plot_pca_variance(data, labels = "ONeill", embedding = "clamp", name=None, c
     plt.xlabel('Number of Principal Components')
     plt.ylabel('Cumulative Explained Variance Ratio')
     plt.grid()
-    plt.savefig(f"plots/pca_variance_{name}.png")
+    plt.savefig(f"plots/embeddings/pca_variance_{name}.png")
 
 def plot_pca_pairs(data, labels = "ONeill", embedding = "clamp", name=None):
     """
@@ -174,7 +182,7 @@ def plot_pca_pairs(data, labels = "ONeill", embedding = "clamp", name=None):
             plt.grid()
     plt.suptitle(f"PCA Pairwise Plots for {name}")
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    plt.savefig(f"plots/pca_pairs_{name}.png")
+    plt.savefig(f"plots/embeddings/pca_pairs_{name}.png")
 
 
 def plot_distance_distribution(dists, name, t_step=0.05):
@@ -190,7 +198,7 @@ def plot_distance_distribution(dists, name, t_step=0.05):
     plt.xlabel("Distance threshold")
     plt.ylabel("Number of distances")
     plt.title("Distribution of distances to output embedding")
-    plt.savefig(f"plots/distance_distribution_{name}.png")
+    plt.savefig(f"plots/distances/distribution_{name}.png")
 
 
 def plot_origin_distance(data, labels = "ONeill", embedding = "clamp", method="euclidean", name=None, t_step=0.2):
@@ -206,7 +214,7 @@ def plot_origin_distance(data, labels = "ONeill", embedding = "clamp", method="e
     embed_len = len(embeddings[0])
     origin = [0]*embed_len
 
-    dists = compute_dist(origin, embeddings, method=method)
+    dists = compute_dist(origin, embeddings, method=method)[0]
     dist_max = max(dists)
 
     t_steps = math.ceil(dist_max/t_step)
@@ -221,7 +229,7 @@ def plot_origin_distance(data, labels = "ONeill", embedding = "clamp", method="e
     plt.xlabel("Distance threshold")
     plt.ylabel("Number of distances")
     plt.title("Distribution of distances to origin")
-    plt.savefig(f"plots/origin_distance_distribution_{name}.png")
+    plt.savefig(f"plots/distances/origin_dist_{name}.png")
 
 
 def plot_centroid_distance(data, labels = "ONeill", embedding = "clamp", method="euclidean", name=None, t_step=0.2):
@@ -239,7 +247,7 @@ def plot_centroid_distance(data, labels = "ONeill", embedding = "clamp", method=
 
     centroid = [sum([e[i] for e in embeddings])/len(embeddings) for i in range(embed_len)]
     
-    dists = compute_dist(centroid, embeddings, method=method)
+    dists = compute_dist(centroid, embeddings, method=method)[0]
     dist_max = max(dists)
 
     t_steps = math.ceil(dist_max/t_step)
@@ -254,7 +262,7 @@ def plot_centroid_distance(data, labels = "ONeill", embedding = "clamp", method=
     plt.xlabel("Distance threshold")
     plt.ylabel("Number of distances")
     plt.title("Distribution of distances to centroid")
-    plt.savefig(f"plots/centroid_distance_distribution_{name}.png")
+    plt.savefig(f"plots/distances/centroid_dist_{name}.png")
 
 def plot_distance_distribution(dists, name, t_step=0.05):
 
@@ -269,7 +277,7 @@ def plot_distance_distribution(dists, name, t_step=0.05):
     plt.xlabel("Distance threshold")
     plt.ylabel("Number of distances")
     plt.title("Distribution of distances to output embedding")
-    plt.savefig(f"plots/distance_distribution_{name}.png")
+    plt.savefig(f"plots/distances/distribution_{name}.png")
 
 def plot_distance_average(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", name = None, t_step=0.05):
     """
@@ -308,11 +316,12 @@ def plot_distance_average(data, source_labels = "ONeill", target_labels = None, 
             name = f"{source_label_str}_{target_label_str}_{embedding}_{method}"
 
 
+    #print("Computing distances between", source_labels, "and", target_labels, "using", embedding)
 
-    dists = []
-    for e in source_embeddings:
-        out_dists = compute_dist(e, target_embeddings, method=method)
-        dists.append(out_dists)
+    dists = compute_dist(source_embeddings, target_embeddings, method=method)
+    #for e in source_embeddings:
+    #    out_dists = compute_dist(e, target_embeddings, method=method)
+    #    dists.append(out_dists)
 
     N = len(dists) # = len(source_embeddings)
     
@@ -337,11 +346,12 @@ def plot_distance_average(data, source_labels = "ONeill", target_labels = None, 
     plt.xlabel("Distance threshold")
     plt.ylabel("Average number of distances within threshold")
     plt.title("Average distribution of distances")
-    plt.savefig(f"plots/distance_average_{name}.png")
+    plt.savefig(f"plots/distances/average_{name}.png")
 
 
 def avg_distance_bars(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", name = None):
 
+    #print("avg distancse bar for ", source_labels, "to", target_labels, "using", embedding)
     #TODO description
     if isinstance(source_labels, str):
         source_labels = [source_labels]
@@ -359,14 +369,18 @@ def avg_distance_bars(data, source_labels = "ONeill", target_labels = None, embe
     
     for i, label in enumerate(target_labels):
         target_embeddings = data[label]["embed"][embedding]
-        n_items = len(target_embeddings) * len(source_embeddings)
+        #print("target embeddings:", target_embeddings)
+        #print("shape: ", target_embeddings.shape)
+        #print("source shape: ", source_embeddings.shape)
+        n_items = len(source_embeddings)
         dists = [0]*len(source_embeddings)
         for e in source_embeddings:
-            out_dists = compute_dist(e, target_embeddings, method=method)
+            out_dists = compute_dist(e, target_embeddings, method=method)[0]
+            #TODO this can be optimized by computing the distance between all source and target embeddings at once
             res[i] += np.average(out_dists)
         res[i] /= n_items
 
-
+    #print("Distance stats: min {}, max {}, mean {}, median {}".format(np.min(dists_flat), np.max(dists_flat), np.mean(dists_flat), np.median(dists_flat)))
 
     plt.clf()
     plt.bar(target_labels, res)
@@ -375,10 +389,31 @@ def avg_distance_bars(data, source_labels = "ONeill", target_labels = None, embe
     plt.ylabel("Average distance")
     plt.title(f"Avg distance for {name}")
     plt.tight_layout()
-    plt.savefig(f"plots/avg_distance_{name}.png")
+    plt.savefig(f"plots/distances/avg_dist_{name}.png")
+
+def plot_min_pos(extracted, id_map, label_map, name = None):
+
+    unused_labels =  set(label_map.keys())
+    min_pos = [0] * len(unused_labels)
+    for i, item in enumerate(extracted):
+        label, pos, dist = item
+        if label in unused_labels:
+            id = label_map[label]
+            min_pos[id] = i
+            unused_labels.remove(label)
+
+    plt.clf()
+    plt.bar(id_map.values(), min_pos)
+    plt.xlabel("Artist")
+    plt.xticks(rotation=30, ha="right")
+    plt.ylabel("Minimum position")
+    plt.title(f"Minimum position for {name}")
+    plt.tight_layout()
+    plt.savefig(f"plots/distances/min_pos_{name}.png")
+         
 
 
-def plot_attribution(attribution, id_map, name):
+def plot_attribution(attribution, id_map, name, config_label = None):
     #TODO maybe make this work directly on data dict?
 
     plt.clf()
@@ -388,9 +423,11 @@ def plot_attribution(attribution, id_map, name):
     plt.ylabel("Attribution value")
     plt.title(f"Attribution for {name}")
     plt.tight_layout()
-    plt.savefig(f"plots/attribution_{name}.png")
+    if config_label is not None:
+        plt.savefig(f"plots/attribution/{config_label}/{name}.png")
+    plt.savefig(f"plots/attribution/{name}.png")
 
-def plot_attribution_distribution(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", name=None):
+def plot_attribution_distribution(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", name=None, top_N = None, dist_threshold = None, top_Y = None, attribution_threshold = None, config_label = None):
     
 
     if isinstance(source_labels, str):
@@ -406,7 +443,7 @@ def plot_attribution_distribution(data, source_labels = "ONeill", target_labels 
         source_str = "-".join(source_labels)
         name = f"{source_str}_{embedding}_{method}"
 
-    attribution, id_map, _ = compute_attribution(data, source_labels, target_labels)
+    attribution, id_map, _ = compute_attribution(data, source_labels, target_labels, embedding=embedding, top_N=top_N, dist_threshold=dist_threshold, top_Y=top_Y, attribution_threshold=attribution_threshold)
 
     N_artists = len(attribution[0])
     counts = [0]*N_artists
@@ -429,7 +466,9 @@ def plot_attribution_distribution(data, source_labels = "ONeill", target_labels 
     plt.ylabel("Number of times attributed")
     plt.title(f"Attribution distribution for {name}")
     plt.tight_layout()
-    plt.savefig(f"plots/attribution_distribution_{name}.png")
+    if config_label is not None:
+        plt.savefig(f"plots/attribution/{config_label}/distribution_{name}.png")
+    plt.savefig(f"plots/attribution/distribution_{name}.png")
 
     plt.clf()
     plt.bar(id_map.values(), avg)
@@ -438,4 +477,6 @@ def plot_attribution_distribution(data, source_labels = "ONeill", target_labels 
     plt.ylabel("Average Attribution")
     plt.title(f"Average attribution for {name}")
     plt.tight_layout()
-    plt.savefig(f"plots/attribution_average_{name}.png")
+    if config_label is not None:
+        plt.savefig(f"plots/attribution/{config_label}/average_{name}.png")
+    plt.savefig(f"plots/attribution/average_{name}.png")
