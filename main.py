@@ -632,6 +632,10 @@ if __name__ == "__main__":
             data[label]["avg_embed"] = np.average(embedded_data, axis=0)
             #data[label]["avg_embed"] = [sum([e[i] for e in embedded_data])/len(embedded_data) for i in range(embed_len)]
 
+    print(data["ONeill"]["embed"]["clamp"].shape)
+    print(data["ONeill"]["embed"]["clap"].shape)
+    print(data["ON  eill"]["embed"]["muq"].shape)
+
 
     #plotting.compute_attribution(data, output_labels=["special"], data_labels=target_data_labels, embedding="clamp", dist_method="cosine", extract_N=5)
     for embedding in embeddings: 
