@@ -17,10 +17,10 @@ import subprocess
 import glob
 import shutil
 
-target_data_labels = ["ONeill","ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"] #TODO add more labels here as needed, these should correspond to the txt or abc files in data/
+oneilljigs_labels = ["ONeill","ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"] #TODO add more labels here as needed, these should correspond to the txt or abc files in data/
 secondary_labels = []  #Labels that should not be used to generate main plots
 #target_data_labels = ["ONeill", "output", "Folkwiki"]
-embeddings = ["clamp", "muq", "clap"] # options: "clamp", "clap", "muq", "folkrnn", "random"
+embeddings = ["clamp"] # options: "clamp", "clap", "muq", "folkrnn", "random"
 methods = ["cosine"] # options: "euclidean", "cosine", "cl", "matching", "hamming", "jaccard", "orchini", "sorencen-dice", "tanimoto", "tucker", "tversky"
 CLAMP_MODEL_NAME = "sander-wood/clamp-small-512"
 
@@ -43,7 +43,7 @@ def verify_folder_structure():
             os.makedirs(folder)
     plotting.verify_plot_folder()
 
-def load_abc(data_path):
+def load_abc(data_path, folder = None):
     with open(data_path, 'r') as f:
         data = f.read().strip()
 
@@ -61,11 +61,24 @@ def load_abc(data_path):
 
     return tunes, idx2token, token2idx
 
+def load_folder(folder_path):
+    # Load all .abc or .txt files in the folder and return a list of labels corresponding to the files found
+    labels = []
+    for filename in os.listdir(folder_path):
+        folder_name = os.path.split(folder_path)[1]
+        if filename.endswith(".abc") or filename.endswith(".txt"):
+            label = os.path.splitext(filename)[0]
+            labels.append(folder_name + "/" + label)
+    print("Found labels in folder '{}': {}".format(folder_path, labels))
+    return labels
+
+
 def format_abc(filename):
     """
     Formats the tunes in a file in a way that can be processed by abc2midi. This may involve adding necessary headers, ensuring correct spacing, etc.
     """
     subprocess.run(["python", "abc_processing.py", "--data_path", filename])
+
 
 def process_abc(labels, model_name="clap"):
     """
@@ -259,10 +272,13 @@ def embed(data, embedding, use_cache = True, cache_label = ""):
         print(embedding+cache_label, "embeddings loaded from cache")
         return np.array(res)
     elif embedding == "clamp":
+        print("Embedding", cache_label, "with CLAMP model")
         res = clamp(data["abc"])
     elif embedding == "clap":
+        print("Embedding", cache_label, "with CLAP model")
         res = clap(data["wav"])
     elif embedding == "muq":
+        print("Embedding", cache_label, "with MuQ-MuLan model")
         res = muq(data["wav"])
     elif embedding == "folkrnn":
         res = folkrnn_embed(data["abc"])
@@ -375,6 +391,19 @@ def folkrnn_embed(tunes):
         pass#TODO
     return res
 
+
+def embed_all(data, embeddings):
+    for label in data.keys():
+        for embedding in embeddings:
+            embedded_data = embed(data[label], embedding, cache_label = label)
+            data[label][embedding] = embedded_data
+
+            print(label, data[label][embedding].shape)
+            #embed_len = len(embedded_data[0])
+            data[label]["avg_embed"] = np.average(embedded_data, axis=0)
+
+    return data
+
 def compute_dist(source, data, method):
     if isinstance(source[0], float) or isinstance(source[0], int):
         source = [source]
@@ -438,7 +467,7 @@ def compute_dist(source, data, method):
     return dists
 
 
-def compute_attribution(data, output_labels, data_labels = None, attribution_method = None, dist_method = "cosine", embedding = "clamp",
+def compute_attribution(data, source_labels, target_labels, attribution_method = None, dist_method = "cosine", embedding = "clamp",
     top_N = None, dist_threshold = None, top_Y = None, attribution_threshold = None, extract_N = None, extract_write = True):
     # Compute attribution scores the output embedding with respect to the data embeddings using the specified method
 
@@ -450,23 +479,23 @@ def compute_attribution(data, output_labels, data_labels = None, attribution_met
     ns = []
 
 
-    n_artists = len(data_labels)
+    n_artists = len(target_labels)
     embeddings = None
     i = 0
 
-    if data_labels is None:
-        data_labels = output_labels
+    if target_labels is None:
+        target_labels = source_labels
 
     # Flatten the data embeddings from different labels/artists and create id and label maps
-    for label in data_labels:
+    for label in target_labels:
         if embeddings is None:
-            embeddings = data[label]["embed"][embedding]
+            embeddings = data[label][embedding]
         else:
-            embeddings = np.vstack([embeddings, data[label]["embed"][embedding]])
+            embeddings = np.vstack([embeddings, data[label][embedding]])
         id_map[i] = label
         label_map[label] = i
-        ids += [i for _ in data[label]["embed"][embedding]]
-        ns.append(len(data[label]["embed"][embedding]))
+        ids += [i for _ in data[label][embedding]]
+        ns.append(len(data[label][embedding]))
         i += 1
 
 
@@ -478,11 +507,11 @@ def compute_attribution(data, output_labels, data_labels = None, attribution_met
     #print("ns: ", ns)
 
     outputs = None
-    for label in output_labels:
+    for label in source_labels:
         if outputs is None:
-            outputs = data[label]["embed"][embedding]
+            outputs = data[label][embedding]
         else:
-            outputs = np.vstack([outputs, data[label]["embed"][embedding]])
+            outputs = np.vstack([outputs, data[label][embedding]])
     #print("embeddings shape: ", embeddings.shape)
 
     #print("outputs shape: ", outputs.shape)
@@ -507,13 +536,13 @@ def compute_attribution(data, output_labels, data_labels = None, attribution_met
     if extract_N is not None:
         extracted = []
         if extract_write:
-            out_filename = "_".join(output_labels) + ".txt"
+            out_filename = "_".join(source_labels) + ".txt"
             out_filename = "plots/distances/" + out_filename
             out_file = open(out_filename, "w")
             out_file.write("Extracting top {} closest items for each output embedding with distance threshold {}\n\n".format(extract_N, dist_threshold))
             out_file.write("Distance stats: min {}, max {}, mean {}, median {}\n\n".format(np.min(dists_flat), np.max(dists_flat), np.mean(dists_flat), np.median(dists_flat)))
-            target_string = "_".join(data_labels)
-            source_string = "_".join(output_labels)
+            target_string = "_".join(target_labels)
+            source_string = "_".join(source_labels)
             out_file.write("Evaluating distances from {} to {} using embedding '{}' and distance method '{}'\n\n".format(source_string, target_string, embedding, dist_method))
         
     
@@ -602,121 +631,77 @@ def compute_attribution(data, output_labels, data_labels = None, attribution_met
         return res, id_map, label_map, extracted
     return res, id_map, label_map
 
+def get_data(labels):
+    data = {}
+
+    
+    #process_abc(secondary_labels, model_name="muq")
+    #process_abc(secondary_labels, model_name="clap")
+
+    for label in labels:
+        label_name = label.split("/")[-1]
+        data[label_name] = {}
+        if os.path.exists(f"data/{label}.abc"):
+            data[label_name]["abc"], _, _ = load_abc(f"data/{label}.abc")
+        elif os.path.exists(f"data/{label}.txt"):
+            data[label_name]["abc"], _, _ = load_abc(f"data/{label}.txt")
+        else:
+            raise ValueError(f"No abc or txt file found for label {label} in data folder")
+        data[label_name]["wav"] = f"data/wav/{label}/"
+
+    return data
+    
 
 
 
 if __name__ == "__main__":
 
     verify_folder_structure()
-    # Load abc and wav formats of the data
-    data = {}
 
-    #process_abc(secondary_labels, model_name="muq")
-    #process_abc(secondary_labels, model_name="clap")
+    data_both = load_folder("data/grouped_both")
+    data_meter = load_folder("data/grouped_meter")
+    data_key = load_folder("data/grouped_key")
 
-    for label in target_data_labels + secondary_labels:
-        data[label] = {}
-        if os.path.exists(f"data/{label}.abc"):
-            data[label]["abc"], _, _ = load_abc(f"data/{label}.abc")
-        elif os.path.exists(f"data/{label}.txt"):
-            data[label]["abc"], _, _ = load_abc(f"data/{label}.txt")
-        else:
-            raise ValueError(f"No abc or txt file found for label {label} in data folder")
-        data[label]["wav"] = f"data/wav/{label}/"
-        data[label]["embed"] = {}
-        for embedding in embeddings:
-            embedded_data = embed(data[label], embedding, cache_label = label)
-            data[label]["embed"][embedding] = embedded_data
-            print(data[label]["embed"][embedding].shape)
-            embed_len = len(embedded_data[0])
-            data[label]["avg_embed"] = np.average(embedded_data, axis=0)
-            #data[label]["avg_embed"] = [sum([e[i] for e in embedded_data])/len(embedded_data) for i in range(embed_len)]
+    output_both = load_folder("data/folkrnn_both")
+    output_meter = load_folder("data/folkrnn_meter")
+    output_key = load_folder("data/folkrnn_key")
 
-    print(data["ONeill"]["embed"]["clamp"].shape)
-    print(data["ONeill"]["embed"]["clap"].shape)
-    print(data["ON  eill"]["embed"]["muq"].shape)
+    source_label_list = [oneilljigs_labels, output_both, output_meter, output_key]
+    target_label_list = [oneilljigs_labels, data_both, data_meter, data_key]
+    default_name_list = ["oneill", "both", "meter", "key"]
 
-
-    #plotting.compute_attribution(data, output_labels=["special"], data_labels=target_data_labels, embedding="clamp", dist_method="cosine", extract_N=5)
-    for embedding in embeddings: 
-        # Embed the data using the specified embedding method
-
-        plotting.plot_embeddings(data, "ONeill", embedding)
-        plotting.plot_embeddings_pca(data, "ONeill", embedding)
-
-        plotting.plot_pca_pairs(data, "ONeill", embedding)
-        plotting.plot_pca_variance(data, "ONeill", embedding, components=100)
-
-
-
-        for m in methods:
-            for label1 in target_data_labels:
-                for label2 in target_data_labels:
-                    plotting.plot_distance_average(data, label1, label2, embedding, method=m)
-
-
-
-        e_out = random.choice(data["ONeill_100"]["embed"][embedding])
-
-        for method in methods:
-            print("e_out:", e_out)
-            print("e_out shape:", e_out.shape)
-            out_dists = compute_dist(e_out, data["ONeill"]["embed"][embedding], method)[0]
-            print("OD:", out_dists, out_dists.shape) 
-            out_dists_full = compute_dist(e_out, np.vstack([data["ONeill"]["embed"][embedding], data["ONeill_100"]["embed"][embedding]]), method)[0]
-
-
-
-            plotting.plot_origin_distance(data, "ONeill", embedding, method="euclidean", t_step=0.01)
-            plotting.plot_centroid_distance(data, "ONeill", embedding, method="euclidean", t_step=0.01)
-            plotting.plot_distance_distribution(out_dists, embedding+"_"+m, t_step=0.01)
-            plotting.plot_distance_distribution(out_dists_full, embedding+"_full_"+m, t_step=0.01)
-
-
-        for label in target_data_labels:
-            target_labels = target_data_labels.copy()
-            attribution, id_map, label_map, extracted = compute_attribution(data, output_labels=[label], data_labels = target_labels, attribution_method = None, dist_method = "cosine", embedding = embedding, extract_N=999, extract_write=False)
-            #print("extracted:", extracted)
-            e = random.randint(0, len(extracted)-1)
-            name = label + "_" + embedding + "_item_" + str(e)
-            plotting.plot_min_pos(extracted[e], id_map, label_map, name)
-        attribution_configs = [  #top_N, dist_threshold, top_Y, attribution_threshold
-            [None, None, None, None],
-            [5, None, None, None],
-            [10, None, None, None],
-            [None, 0.5, None, None],
-            [None, None, 3, None]
-        ]
-        for config in attribution_configs:
-            top_N = config[0]
-            dist_threshold = config[1]
-            top_Y = config[2]
-            attribution_threshold = config[3]
-            config_label = ""
-            if config[0] is not None:
-                config_label += "N="+str(config[0])+"_"
-            if config[1] is not None:
-                config_label += "D_T="+str(config[1])+"_"
-            if config[2] is not None:
-                config_label += "Y="+str(config[2])+"_"
-            if config[3] is not None:
-                config_label += "A_T="+str(config[3])+"_"
-            if config_label == "":
-                config_label = "none"
-            plotting.verify_plot_folder(subfolder = config_label)
-
-            for label in target_data_labels:
-                target_labels = target_data_labels.copy()
-                target_labels.remove(label)
-                attribution, id_map, label_map = compute_attribution(data, output_labels=[label], data_labels = target_labels, attribution_method = None, dist_method = "cosine", embedding = embedding, top_N = config[0], dist_threshold=config[1], top_Y=config[2], attribution_threshold=config[3])
-
-                plotting.avg_distance_bars(data, [label], target_labels, embedding)
-                
-                plotting.plot_attribution(random.choice(attribution), id_map, label + "_" + embedding, config_label = config_label)
-                plotting.plot_attribution_distribution(data, [label], target_labels, embedding, top_N = config[0], dist_threshold=config[1], top_Y=config[2], attribution_threshold=config[3], config_label = config_label)
-
-        
-        
+    if len(source_label_list) != len(target_label_list):
+        raise ValueError("Source and target label lists must have the same length")
     
 
+
+    plotting.plot_key_meter_grid(data_dir="data/data_v2", output_name="key_meter_grid")
+
+    for i in range(len(source_label_list)):
+        print(f"Processing source label list {i}: {source_label_list[i]}")
+        print(f"Processing target label list {i}: {target_label_list[i]}")
+
+        source_labels = source_label_list[i]
+        target_labels = target_label_list[i]
+        #get
+        both_labels = source_labels + [label for label in target_labels if label not in source_labels]
+        # Load abc and wav formats of the data
+        print("Loading data for labels:", both_labels)
+        data = get_data(both_labels)
+        #print(data)
+
+        # Shorten label names
+        source_labels = [label.split("/")[-1] for label in source_labels]
+        target_labels = [label.split("/")[-1] for label in target_labels]
+        both_labels = source_labels + [label for label in target_labels if label not in source_labels]
+
+        data = embed_all(data, embeddings)
+
+
+        plotting.plot_data_dist(data, target_labels, default_name_list[i])
+        #plotting.make_embedding_plots(data, both_labels, embeddings)
+
+        #plotting.make_distance_plots(data, source_labels, target_labels, embeddings, methods)
+
+        #plotting.make_attribution_plots(data, source_labels, target_labels, embeddings, methods)
     

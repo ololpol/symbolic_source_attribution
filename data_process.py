@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import Dict, List, Tuple, Iterator, Union
 from dataclasses import dataclass
+import matplotlib.pyplot as plt
 
 @dataclass
 class DataItem:
@@ -98,15 +99,15 @@ def save_grouped_data_to_files(grouped: Dict[Union[Tuple[str, str], str], List[D
         # Create filename based on grouping type
         if group_by == "meter":
             safe_meter = key.replace("/", "_")
-            filename = f"meter_{safe_meter}.txt"
+            filename = f"{safe_meter}.txt"
         elif group_by == "key":
             safe_key = key.replace("/", "_").replace(" ", "_")
-            filename = f"key_{safe_key}.txt"
+            filename = f"{safe_key}.txt"
         else:  # "both"
             meter, key_val = key
             safe_meter = meter.replace("/", "_")
             safe_key = key_val.replace("/", "_").replace(" ", "_")
-            filename = f"meter_{safe_meter}_key_{safe_key}.txt"
+            filename = f"{safe_meter}-{safe_key}.txt"
         
         filepath = output_dir / filename
         
@@ -121,7 +122,7 @@ def save_grouped_data_to_files(grouped: Dict[Union[Tuple[str, str], str], List[D
 
 if __name__ == "__main__":
     data_dir = Path("data/data_v2")
-    first_items = read_first_n_data_items(data_dir, 999999)
+    first_items = read_first_n_data_items(data_dir, 99999)
     
     # Save all data to a single file
     save_all_data_to_file(first_items, Path("data/all_data.txt"))
@@ -137,9 +138,15 @@ if __name__ == "__main__":
     # Group and save by key only
     grouped_key = group_data_by_meter_key(first_items, group_by="key")
     save_grouped_data_to_files(grouped_key, Path("data/grouped_key"), group_by="key")
-    
+
+    print("Keys:", list(grouped_key.keys())) 
+    print("Meters:", list(grouped_meter.keys()))
     # Print summary
     print("\n=== Summary: Grouped by Meter and Key ===")
     for category, group in sorted(grouped_both.items()):
         meter, key = category
         print(f"Category: Meter={meter}, Key={key}, Count={len(group)}")
+
+
+
+    
