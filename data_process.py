@@ -143,9 +143,12 @@ if __name__ == "__main__":
     print("Meters:", list(grouped_meter.keys()))
     # Print summary
     print("\n=== Summary: Grouped by Meter and Key ===")
+    tot = 0
     for category, group in sorted(grouped_both.items()):
         meter, key = category
+        tot += len(group)
         print(f"Category: Meter={meter}, Key={key}, Count={len(group)}")
+    print(f"Total items grouped by both: {tot}")
 
 
 

@@ -661,6 +661,59 @@ def make_attribution_plots(data, source_labels, target_labels = None, embeddings
                 plot_attribution_distribution(data, [label], target_labels, embedding, top_N = config[0], dist_threshold=config[1], top_Y=config[2], attribution_threshold=config[3], config_label = config_label)
 
 
+def get_most_similar(data, source_label, target_labels, label_pos, embedding = "clamp", method = "cosine", N=5, out_file = None, dense = False):
+    item = data[source_label][embedding][label_pos]
+
+
+    extracted = None
+    id_map = {}
+    pos_map = {}
+    ids = []
+    pos = 0
+    i = 0
+
+    out = ""
+    for label in target_labels:
+        if extracted is None:
+            extracted = data[label][embedding]
+            
+        else: 
+            extracted = np.vstack([extracted, data[label][embedding]])
+
+        ids += [i for _ in range(len(data[label][embedding]))]
+        id_map[i] = label
+        pos_map[label] = pos
+        i += 1
+        pos += len(data[label][embedding])
+
+    target_data = extracted
+    dists = compute_dist(item, target_data, method=method)[0]
+    sorted_indices = np.argsort(dists)
+
+    if not dense:
+        out += f"Most similar items to {source_label} item {label_pos} using {embedding} and {method}:\n"
+        out += f"Original tune: \n{data[source_label]['abc'][label_pos]}\n"
+    else: 
+        out += data[source_label]['abc'][label_pos] + "\n\n"
+
+    for i in range(N):
+        idx = sorted_indices[i]
+        
+        target_label = id_map[ids[idx]]
+        target_pos = idx - pos_map[target_label]
+        if not dense:
+            out += f"Most similar {i+1}: {target_label} item {target_pos} (distance: {dists[sorted_indices[i]]})\n"
+            out += f"Content: \n{data[target_label]['abc'][target_pos]}\n"
+        else:
+            out += data[target_label]['abc'][target_pos] + "\n\n"
+
+    if out_file:
+        with open(out_file, "w") as f:
+            f.write(out)
+    else:
+        print(out)  
+
+
 def plot_key_meter_grid(data_dir: str = "data/data_v2", output_name: str = "key_meter_grid"):
     """
     Generate a grid plot showing the sizes of different key and meter pair groups.

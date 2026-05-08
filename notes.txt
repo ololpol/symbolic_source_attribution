@@ -106,3 +106,19 @@ notes: Extract 6/8(jigs) and 4/4(reels)
 data_v2_withtitles
 clarify aim
 
+
+5/6 meeting pre 
+what plots to show
+Clamp vs other embeddings?
+prestudy
+
+5/6 post:
+
+more individual
+easyABC
+results: examples, most similar tune
+results 2: attribution for specfic output
+results 3: average attribution plots
+results 4: is it easier in sparse key-meter pairs
+
+meeting wed 10am

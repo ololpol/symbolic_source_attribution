@@ -54,7 +54,6 @@ def load_abc(data_path, folder = None):
 
     idx2token = list(tokens_set)
     vocab_size = len(idx2token)
-    print('vocabulary size:', vocab_size)
     token2idx = dict(zip(idx2token, range(vocab_size)))
     tunes = data.split('\n\n')
 
@@ -269,7 +268,7 @@ def embed(data, embedding, use_cache = True, cache_label = ""):
     if use_cache and cache_file in cache_folder:
         with open("cache/"+cache_file, "rb") as f:
             res = pickle.load(f)
-        print(embedding+cache_label, "embeddings loaded from cache")
+        #print(embedding+cache_label, "embeddings loaded from cache")
         return np.array(res)
     elif embedding == "clamp":
         print("Embedding", cache_label, "with CLAMP model")
@@ -344,8 +343,6 @@ def clap(tune_fname):
         audio_data, _ = librosa.load(wav_fname, sr=48000) # sample rate should be 48000
         audio_data = audio_data.reshape(1, -1) # Make it (1,T) or (N,T)
         audio_embed = model.get_audio_embedding_from_data(x = audio_data, use_tensor=False)
-        #print("Audio embed first 20:", audio_embed[:,-20:])
-        #print("Audio embed shape:", audio_embed.shape)
         res.append(audio_embed[0])
         i += 1
         if i % 10 == 0:
@@ -398,7 +395,7 @@ def embed_all(data, embeddings):
             embedded_data = embed(data[label], embedding, cache_label = label)
             data[label][embedding] = embedded_data
 
-            print(label, data[label][embedding].shape)
+            #print(label, data[label][embedding].shape)
             #embed_len = len(embedded_data[0])
             data[label]["avg_embed"] = np.average(embedded_data, axis=0)
 
@@ -698,10 +695,20 @@ if __name__ == "__main__":
         data = embed_all(data, embeddings)
 
 
-        plotting.plot_data_dist(data, target_labels, default_name_list[i])
+        #plotting.plot_data_dist(data, target_labels, default_name_list[i])
         #plotting.make_embedding_plots(data, both_labels, embeddings)
 
         #plotting.make_distance_plots(data, source_labels, target_labels, embeddings, methods)
 
         #plotting.make_attribution_plots(data, source_labels, target_labels, embeddings, methods)
+        # 
+        if i == 0 or i == 1: 
+            for label in source_labels:
+                plotting.get_most_similar(data, label, target_labels, 0, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}.txt".format(label))
+                plotting.get_most_similar(data, label, target_labels, 0, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}_dense.txt".format(label), dense=True)
+            for label in target_labels:
+                plotting.get_most_similar(data, label, target_labels, 0, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}.txt".format(label))
+                plotting.get_most_similar(data, label, target_labels, 0, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}_dense.txt".format(label), dense=True)
+
+        #plotting.get_most_similar(data, source_labels[0], target_labels, 0, embedding=embeddings[0], method=methods[0], N=5)
     
