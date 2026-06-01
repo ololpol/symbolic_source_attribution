@@ -663,8 +663,14 @@ if __name__ == "__main__":
     output_meter = load_folder("data/folkrnn_meter")
     output_key = load_folder("data/folkrnn_key")
 
-    source_label_list = [oneilljigs_labels, output_both, output_meter, output_key]
-    target_label_list = [oneilljigs_labels, data_both, data_meter, data_key]
+    output_modified = load_folder("data/modified")
+
+    #source_label_list = [oneilljigs_labels, output_both, output_meter, output_key, output_modified]
+    source_label_list = [output_modified]
+    
+    #target_label_list = [oneilljigs_labels, data_both, data_meter, data_key, data_both]
+    target_label_list = [data_both]
+    
     default_name_list = ["oneill", "both", "meter", "key"]
 
     if len(source_label_list) != len(target_label_list):
@@ -695,13 +701,17 @@ if __name__ == "__main__":
         data = embed_all(data, embeddings)
 
 
-        #plotting.plot_data_dist(data, target_labels, default_name_list[i])
-        #plotting.make_embedding_plots(data, both_labels, embeddings)
+        for embedding in embeddings:
+            for label in target_labels:
+                if len(data[label][embedding]) < 400:
+                    plotting.local_dist_grid(data, label, embedding)
+        plotting.plot_data_dist(data, target_labels, default_name_list[i])
+        plotting.make_embedding_plots(data, both_labels, embeddings)
 
-        #plotting.make_distance_plots(data, source_labels, target_labels, embeddings, methods)
+        plotting.make_distance_plots(data, source_labels, target_labels, embeddings, methods)
 
-        #plotting.make_attribution_plots(data, source_labels, target_labels, embeddings, methods)
-        # 
+        plotting.make_attribution_plots(data, source_labels, target_labels, embeddings, methods)
+        
         if i == 0 or i == 1: 
             for label in source_labels:
                 plotting.get_most_similar(data, label, target_labels, 0, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}.txt".format(label))
