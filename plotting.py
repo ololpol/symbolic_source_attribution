@@ -44,7 +44,7 @@ def plot_data_dist(data, labels, name):
     plt.clf()
     plt.bar(labels, res)
     plt.xlabel("Artist")
-    plt.xticks(rotation=30, ha="right")
+    plt.xticks(rotation=30, ha="right", fontsize=16)
     plt.ylabel("Number of items")
     #plt.title(f"Data distribution for {name}")
     plt.tight_layout()
@@ -217,7 +217,7 @@ def plot_pca_pairs(data, labels = "ONeill", embedding = "clamp", name=None):
             plt.xlabel(f'PC {i+1}')
             plt.ylabel(f'PC {j+1}')
             plt.grid()
-    plt.suptitle(f"PCA Pairwise Plots for {name}")
+    #plt.suptitle(f"PCA Pairwise Plots for {name}")
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.savefig(f"plots/embeddings/pca_pairs_{name}.png")
     plt.close()
@@ -318,6 +318,32 @@ def plot_distance_distribution(dists, name, t_step=0.05):
     #plt.title("Distribution of distances to output embedding")
     plt.savefig(f"plots/distances/distribution_{name}.png")
 
+
+def get_shortest_dists(data, label = "ONeill", embedding = "clamp", method ="cosine", name = None, N=10):
+    if isinstance(label, str):
+        label = [label]
+    embeddings = extract_embeddings(data, label, embedding)
+
+    if name is None:
+        label_str = "-".join(label)
+        name = f"{label_str}_{embedding}_{method}"
+
+    dists = compute_dist(embeddings, embeddings, method=method)
+    for i in range(len(dists)):
+        dists[i][i] = float("inf") # ignore self distance
+    
+    #TODO this can be optimized by using numpy functions instead of flattening and sorting
+    #TODO this breaks if N is big and we get the self distances
+    order = np.argsort(dists.flatten())
+    shortest_dists = [dists.flatten()[i] for i in order[:N]]
+    indices = [(i//len(dists), i%len(dists)) for i in order[:N]]
+
+    with open(f"plots/distances/shortest_dists_{name}.txt", "w") as f:
+        for i in range(N):
+            f.write(f"{shortest_dists[i]}: {indices[i]}\n")
+
+    
+
 def plot_distance_average(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", name = None, t_step=0.05):
     """
     Generates a 2D scatter plots of the first two dimensions of the embeddings and saves it as a PNG file.
@@ -350,7 +376,7 @@ def plot_distance_average(data, source_labels = "ONeill", target_labels = None, 
         source_label_str = "-".join(source_labels)
         target_label_str = "-".join(target_labels)
         if source_label_str == target_label_str:
-             name = f"{source_label_str}_{embedding}"
+             name = f"self_{source_label_str}_{embedding}"
         else: 
             name = f"{source_label_str}_{target_label_str}_{embedding}_{method}"
 
@@ -383,7 +409,7 @@ def plot_distance_average(data, source_labels = "ONeill", target_labels = None, 
     plt.clf()
     plt.bar(thresholds, dist_counts, width=t_step)
     plt.xlabel("Distance threshold")
-    plt.ylabel("Average number of distances within threshold")
+    plt.ylabel("Average number of distances")
     #plt.title("Average distribution of distances")
     plt.savefig(f"plots/distances/average_{name}.png")
 
@@ -436,7 +462,7 @@ def avg_distance_bars(data, source_labels = "ONeill", target_labels = None, embe
     plt.clf()
     plt.bar(target_labels, res)
     plt.xlabel("Artist")
-    plt.xticks(rotation=30, ha="right")
+    plt.xticks(rotation=30, ha="right", fontsize=16)
     plt.ylabel("Average distance")
     #plt.title(f"Avg distance for {name}")
     plt.tight_layout()
@@ -456,7 +482,7 @@ def plot_min_pos(extracted, id_map, label_map, name = None):
     plt.clf()
     plt.bar(id_map.values(), min_pos)
     plt.xlabel("Artist")
-    plt.xticks(rotation=30, ha="right")
+    plt.xticks(rotation=30, ha="right", fontsize=16)
     plt.ylabel("Minimum position")
     #plt.title(f"Minimum position for {name}")
     plt.tight_layout()
@@ -482,7 +508,7 @@ def avg_min_pos(extracted, id_map, label_map, name = None):
     plt.clf()
     plt.bar(id_map.values(), min_pos)
     plt.xlabel("Artist")
-    plt.xticks(rotation=30, ha="right")
+    plt.xticks(rotation=30, ha="right", fontsize=16)
     plt.ylabel("Average minimum position")
     #plt.title(f"Average minimum position for {name}")
     plt.tight_layout()
@@ -526,13 +552,13 @@ def plot_attribution(attribution, id_map, name, config_label = None):
         # Create 2D grid plot
         fig, ax = plt.subplots(figsize=(max(10, len(all_meters) * 0.8), max(8, len(all_keys) * 0.8)))
         
-        im = ax.imshow(grid, cmap='viridis', aspect='auto', interpolation='nearest')
+        im = ax.imshow(grid, cmap='viridis', aspect='auto', interpolation='nearest', vmin=0, vmax=1)
         
         # Set ticks and labels
         ax.set_xticks(range(len(all_meters)))
         ax.set_yticks(range(len(all_keys)))
-        ax.set_xticklabels(all_meters, rotation=45, ha='right')
-        ax.set_yticklabels(all_keys)
+        ax.set_xticklabels(all_meters, rotation=45, ha='right', fontsize=20)
+        ax.set_yticklabels(all_keys, fontsize=20)
         
         # Add colorbar
         cbar = plt.colorbar(im, ax=ax)
@@ -547,9 +573,9 @@ def plot_attribution(attribution, id_map, name, config_label = None):
         #                         color="black" if value < grid.max() / 2 else "white",
         #                         fontsize=9)
         
-        ax.set_xlabel('Key', fontsize=12)
-        ax.set_ylabel('Meter', fontsize=12)
-        ax.set_title(f"Attribution for {name}")
+        #ax.set_xlabel('Key', fontsize=12)
+        #ax.set_ylabel('Meter', fontsize=12)
+        #ax.set_title(f"Attribution for {name}")
         
         plt.tight_layout()
         if config_label != None:
@@ -561,7 +587,7 @@ def plot_attribution(attribution, id_map, name, config_label = None):
         # Original bar chart for non-grid data
         plt.bar(id_map.values(), attribution)
         plt.xlabel("Artist")
-        plt.xticks(rotation=30, ha="right")
+        plt.xticks(rotation=30, ha="right", fontsize=16)
         plt.ylabel("Attribution value")
         #plt.title(f"Attribution for {name}")
         plt.tight_layout()
@@ -637,17 +663,20 @@ def plot_attribution_distribution(data, source_labels = "ONeill", target_labels 
                 if idx in key_meter_pairs:
                     key, meter = key_meter_pairs[idx]
                     grid[key_to_idx[key], meter_to_idx[meter]] = att_val
-            
+            if names[id] == "average":
+                f = open(f"plots/attribution/{config_label}/dump_{name}.txt", "w")
+                f.write(str(grid))
+                f.close()
             # Create 2D grid plot
             fig, ax = plt.subplots(figsize=(max(10, len(all_meters) * 0.8), max(8, len(all_keys) * 0.8)))
             
-            im = ax.imshow(grid, cmap='viridis', aspect='auto', interpolation='nearest')
+            im = ax.imshow(grid, cmap='viridis', aspect='auto', interpolation='nearest', vmin=0, vmax=1)
             
             # Set ticks and labels
             ax.set_xticks(range(len(all_meters)))
             ax.set_yticks(range(len(all_keys)))
-            ax.set_xticklabels(all_meters, rotation=45, ha='right')
-            ax.set_yticklabels(all_keys)
+            ax.set_xticklabels(all_meters, rotation=45, ha='right', fontsize=20)
+            ax.set_yticklabels(all_keys, fontsize=20)
             
             # Add colorbar
             cbar = plt.colorbar(im, ax=ax)
@@ -665,13 +694,13 @@ def plot_attribution_distribution(data, source_labels = "ONeill", target_labels 
             #                        color="black" if value < grid.max() / 2 else "white",
             #                        fontsize=9)
             
-            ax.set_xlabel('Key', fontsize=12)
-            ax.set_ylabel('Meter', fontsize=12)
+            #ax.set_xlabel('Key', fontsize=12)
+            #ax.set_ylabel('Meter', fontsize=12)
 
-            if id == 0:
-                ax.set_title(f"Attribution counts {name}")
-            else:
-                ax.set_title(f"Average attribution for {name}")
+            #if id == 0:
+            #    ax.set_title(f"Attribution counts {name}")
+            #else:
+            #    ax.set_title(f"Average attribution for {name}")
             
             plt.tight_layout()
             if config_label != None:
@@ -686,7 +715,7 @@ def plot_attribution_distribution(data, source_labels = "ONeill", target_labels 
         plt.clf()
         plt.bar(id_map.values(), counts)
         plt.xlabel("Artist")
-        plt.xticks(rotation=30, ha="right")
+        plt.xticks(rotation=30, ha="right", fontsize=16)
         plt.ylabel("Number of times attributed")
         #plt.title(f"Attribution distribution for {name}")
         plt.tight_layout()
@@ -698,7 +727,7 @@ def plot_attribution_distribution(data, source_labels = "ONeill", target_labels 
         plt.clf()
         plt.bar(id_map.values(), avg)
         plt.xlabel("Artist")
-        plt.xticks(rotation=30, ha="right")
+        plt.xticks(rotation=30, ha="right", fontsize=16)
         plt.ylabel("Average Attribution")
         #plt.title(f"Average attribution for {name}")
         plt.tight_layout()
@@ -748,8 +777,14 @@ def make_distance_plots(data, source_labels, target_labels = None, embeddings = 
         # Distance plots
         for m in methods:
             for label1 in source_labels:
+                plot_distance_average(data, label1, label1, embedding, method=m)
+                get_shortest_dists(data, label1, embedding, method=m, N=20)
                 for label2 in target_labels:
                     plot_distance_average(data, label1, label2, embedding, method=m)
+
+            for label in target_labels:
+                plot_distance_average(data,label, label, embedding)
+            
 
 
 
@@ -781,7 +816,7 @@ def make_distance_plots(data, source_labels, target_labels = None, embeddings = 
             avg_min_pos(extracted, id_map, label_map, name=label)
             #TODO average min pos plot?
 
-def make_attribution_plots(data, source_labels, target_labels = None, embeddings = ["clamp"], methods = ["cosine"], config_label = None):
+def make_attribution_plots(data, source_labels, target_labels = None, embeddings = ["clamp"], methods = ["cosine"], configs = []):
 
     if target_labels is None:
         target_labels = source_labels
@@ -790,16 +825,8 @@ def make_attribution_plots(data, source_labels, target_labels = None, embeddings
     for embedding in embeddings: 
         # Attribution plots
     
-        attribution_configs = [  #top_N, dist_threshold, top_Y, attribution_threshold
-            #[None, None, None, None],
-            #[5, None, None, None],
-            #[10, None, None, None],
-            [None, 0.2, None, None],
-            [None, 0.3, None, None],
-            [None, 0.4, None, None],
-            #[None, None, 3, None]
-        ]
-        for config in attribution_configs:
+        
+        for config in configs:
             config_label = ""
             if config[0] != None:
                 config_label += "N="+str(config[0])+"_"
@@ -854,6 +881,9 @@ def get_most_similar(data, source_label, target_labels, label_pos, embedding = "
     dists = compute_dist(item, target_data, method=method)[0]
     sorted_indices = np.argsort(dists)
 
+    if len(data[source_label][embedding]) <= label_pos:
+        print(f"Label position {label_pos} is out of bounds for {source_label}, defaulting to 1st item")
+        label_pos = 0
     if not dense:
         out += f"Most similar items to {source_label} item {label_pos} using {embedding} and {method}:\n"
         out += f"Original tune: \n{data[source_label]['abc'][label_pos]}\n"
@@ -932,26 +962,26 @@ def plot_key_meter_grid(data_dir: str = "data/data_v2", output_name: str = "key_
     # Set ticks and labels
     ax.set_xticks(range(len(all_meters)))
     ax.set_yticks(range(len(all_keys)))
-    ax.set_xticklabels(all_meters, rotation=45, ha='right')
-    ax.set_yticklabels(all_keys)
+    ax.set_xticklabels(all_meters, rotation=45, ha='right', fontsize=20)
+    ax.set_yticklabels(all_keys, fontsize=20)
     
     # Add colorbar with appropriate label
     cbar = plt.colorbar(im, ax=ax)
     cbar.set_label('Log10(Count + 1)', rotation=270, labelpad=15)
     
     # Add text annotations for counts
-    #for i, key in enumerate(all_keys):
-    #    for j, meter in enumerate(all_meters):
-    #        count = int(grid[i, j])
-    #        if count > 0:
-    #            text = ax.text(j, i, str(count), ha="center", va="center",
-    #                         color="black" if grid_log[i, j] < 2 else "white",
-    #                         fontsize=20)
+    for i, key in enumerate(all_keys):
+        for j, meter in enumerate(all_meters):
+            count = int(grid[i, j])
+            if count > 0:
+                text = ax.text(j, i, str(count), ha="center", va="center",
+                             color="black" if grid_log[i, j] < 2 else "white",
+                             fontsize=20)
     
     # Labels and title
-    ax.set_xlabel('Key', fontsize=12)
-    ax.set_ylabel('Meter', fontsize=12)
-    ax.set_title('Distribution of Key and Meter Pairs in Music Data', fontsize=14)
+    #ax.set_xlabel('Key', fontsize=12)
+    #ax.set_ylabel('Meter', fontsize=12)
+    #ax.set_title('Distribution of Key and Meter Pairs in Music Data', fontsize=14)
     
     plt.tight_layout()
     plt.savefig(f"plots/data/{output_name}.png", dpi=150, bbox_inches='tight')

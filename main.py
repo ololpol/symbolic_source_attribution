@@ -312,6 +312,10 @@ def clamp(tunes):
 
 
     for t in tunes:
+        #remove spaces from t, TODO this can be done earier since all models want this
+        t = t.replace(" ", "")
+        print("prepring tune for CLAMP: ", t)
+
         query = load_music(data=t)
         query_ids = encoding_data([query], patchilizer, music_length)
         query_feature = get_features(query_ids, clamp_model, device)
@@ -665,20 +669,27 @@ if __name__ == "__main__":
 
     output_modified = load_folder("data/modified")
 
-    #source_label_list = [oneilljigs_labels, output_both, output_meter, output_key, output_modified]
-    source_label_list = [output_modified]
-    
-    #target_label_list = [oneilljigs_labels, data_both, data_meter, data_key, data_both]
-    target_label_list = [data_both]
-    
-    default_name_list = ["oneill", "both", "meter", "key"]
+    #source_label_list = [output_modified, output_both, output_meter, output_key, oneilljigs_labels]
+    #source_label_list = [output_meter, output_key, output_modified]
 
+    #source_label_list = [output_both]
+    source_label_list = [oneilljigs_labels]
+    
+    #target_label_list = [data_both, data_both, data_meter, data_key, oneilljigs_labels]
+    #target_label_list = [data_meter, data_key, data_both]
+
+    #target_label_list = [data_both]
+    target_label_list = [oneilljigs_labels]
+    
+    #default_name_list = ["modified", "both", "meter", "key", "oneill"] #"oneill", 
+    default_name_list = ["both"]
+    #default_name_list = ["oneill"]
     if len(source_label_list) != len(target_label_list):
         raise ValueError("Source and target label lists must have the same length")
     
 
 
-    plotting.plot_key_meter_grid(data_dir="data/data_v2", output_name="key_meter_grid")
+    #plotting.plot_key_meter_grid(data_dir="data/data_v2", output_name="key_meter_grid")
 
     for i in range(len(source_label_list)):
         print(f"Processing source label list {i}: {source_label_list[i]}")
@@ -700,25 +711,39 @@ if __name__ == "__main__":
 
         data = embed_all(data, embeddings)
 
-
-        for embedding in embeddings:
-            for label in target_labels:
-                if len(data[label][embedding]) < 400:
-                    plotting.local_dist_grid(data, label, embedding)
+        if True:
+            for embedding in embeddings:
+                for label in target_labels:
+                    if len(data[label][embedding]) < 400:
+                        plotting.local_dist_grid(data, label, embedding)
         plotting.plot_data_dist(data, target_labels, default_name_list[i])
-        plotting.make_embedding_plots(data, both_labels, embeddings)
+        #plotting.make_embedding_plots(data, both_labels, embeddings)
 
-        plotting.make_distance_plots(data, source_labels, target_labels, embeddings, methods)
+        #plotting.make_distance_plots(data, source_labels, target_labels, embeddings, methods)
 
-        plotting.make_attribution_plots(data, source_labels, target_labels, embeddings, methods)
+
+        attribution_configs = [  #top_N, dist_threshold, top_Y, attribution_threshold
+            [None, None, None, None],
+            #[5, None, None, None],
+            [10, None, None, None],
+            #[4, None, None, None],
+            #[None, 0.2, None, None],
+            [None, 0.3, None, None]
+            #[None, 0.4, None, None],
+            #[None, None, 3, None]
+        ]
+
+        #plotting.make_attribution_plots(data, source_labels, target_labels, embeddings, methods, attribution_configs)
         
         if i == 0 or i == 1: 
             for label in source_labels:
-                plotting.get_most_similar(data, label, target_labels, 0, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}.txt".format(label))
-                plotting.get_most_similar(data, label, target_labels, 0, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}_dense.txt".format(label), dense=True)
+                if len(data[label][embeddings[0]]) > 15:
+                    plotting.get_most_similar(data, label, target_labels, 12, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}.txt".format(label))
+                    plotting.get_most_similar(data, label, target_labels, 12, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}_dense.txt".format(label), dense=True)
             for label in target_labels:
-                plotting.get_most_similar(data, label, target_labels, 0, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}.txt".format(label))
-                plotting.get_most_similar(data, label, target_labels, 0, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}_dense.txt".format(label), dense=True)
+                if len(data[label][embeddings[0]]) > 15:
+                    plotting.get_most_similar(data, label, target_labels, 12, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}.txt".format(label))
+                    plotting.get_most_similar(data, label, target_labels, 12, embedding=embeddings[0], method=methods[0], N=5, out_file="plots/distances/most_similar_{}_dense.txt".format(label), dense=True)
 
-        #plotting.get_most_similar(data, source_labels[0], target_labels, 0, embedding=embeddings[0], method=methods[0], N=5)
+        plotting.get_most_similar(data, source_labels[0], target_labels, 15, embedding=embeddings[0], method=methods[0], N=5)
     

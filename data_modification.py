@@ -57,8 +57,8 @@ def write_abc(meters, keys, data, file_path):
 
 
 source_files = ['data/folkrnn_both/folkrnn_v2-Cmaj-6-8.txt', 'data/folkrnn_both/folkrnn_v2-Cmaj-4-4.txt']
-target_keys = ["Cmaj", "CMin", "Cdor", "CMix"]
-target_meters = ["2-4", "3-2", "3-4", "4-4", "6-8", "9-8", "12-8"]
+target_keys = ["Cmaj", "Cmin", "Cdor", "Cmix"]
+target_meters = ["2/4", "3/2", "3/4", "4/4", "6/8", "9/8", "12/8"]
 
 folder = "data/modified/"
 if not os.path.exists(folder):
