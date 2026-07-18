@@ -15,6 +15,13 @@ if "compute_attribution" not in globals():
 
 
 def verify_plot_folder(subfolder = None):
+    """
+    Verifies that the necessary folders for saving plots exist, and creates them if they do not. 
+    Args:
+        subfolder (str, optional): A subfolder name to create within the 'plots/attribution' directory. Defaults to None.
+    Returns:
+        None
+    """
     if not os.path.exists("plots"):
         os.makedirs("plots", exist_ok=True)
 
@@ -28,11 +35,19 @@ def verify_plot_folder(subfolder = None):
         os.makedirs("plots/attribution", exist_ok=True)
     if subfolder is not None:
         os.makedirs("plots/attribution/"+subfolder, exist_ok=True)
-    #TODO check if a set of sub
-    # 
-    # folders exist in the data folder, and create them if they don't
 
 def plot_data_dist(data, labels, name):
+    """
+    Plots the distribution of data items for the specified labels.
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        labels (list): A list of labels for which to plot the data distribution.
+        name (str): A string used in the title and filename of the plot.
+    Returns:
+        None
+
+    Resulting image is saved as plots/data/distribution_{name}.png.
+    """
     print(data.keys())
     res = [0] * len(labels)
     for i, label in enumerate(labels):
@@ -51,6 +66,15 @@ def plot_data_dist(data, labels, name):
     plt.savefig(f"plots/data/distribution_{name}.png")
 
 def extract_embeddings(data, labels, embedding):
+    """
+    Extracts embeddings for the specified labels and embedding type from the data dictionary.
+    Args:
+        data (dict): A dictionary containing the data to be processed.
+        labels (str or list[str]): The label(s) of the data to be extracted.
+        embedding (str): The embedding type to be extracted.
+    Returns:
+        np.ndarray: A 2D array containing the extracted embeddings.
+    """
     # Extract the embeddings for the specified labels and embedding type
     extracted = None
     for label in labels:
@@ -59,6 +83,32 @@ def extract_embeddings(data, labels, embedding):
         else: 
             extracted = np.vstack([extracted, data[label][embedding]])
     return extracted
+
+def load_dump_file(file_path):
+    """
+    Loads dumped attribution data from a text file and returns it as a numpy array.
+    Args:
+        file_path (str): The path to the text file containing the dumped data.
+    Returns:
+        np.ndarray: A 2D array containing the loaded attribution data.
+    """
+    with open(file_path, 'r') as file:
+        data = file.read()
+    
+    # Split by newlines and then by spaces
+    lines = data.strip().split('\n')
+    lines[0] = lines[0][1:]
+    lines[-1] = lines[-1][:-1]
+    result = []
+    for line in lines:
+        line = line.strip()[1:-1]
+        row = [np.float64(item) for item in line.split() if item]
+        #row = [item for item in line.split() if item]
+        
+        result.append(row)
+    
+
+    return np.array(result)
 
 def plot_embeddings(data, labels = "ONeill", embedding = "clamp", name=None):
     """
@@ -72,7 +122,7 @@ def plot_embeddings(data, labels = "ONeill", embedding = "clamp", name=None):
     Returns:
         None
             
-    Image is saved as embeddings_{name}.png, default name is the label and embedding type.
+    Resulting image is saved as plots/embeddings/embeddings_{name}.png, default name is the label and embedding type.
     """
     if isinstance(labels, str):
         labels = [labels]
@@ -108,7 +158,7 @@ def plot_embeddings_pca(data, labels = "ONeill", embedding = "clamp", name=None,
     Returns:
         None
             
-    Image is saved as embeddings_pca_{name}.png, default name is the label(s) and embedding type.
+    Resulting image is saved as plots/embeddings/embeddings_pca_{name}.png, default name is the label(s) and embedding type.
     """
     if isinstance(labels, str):
         labels = [labels]
@@ -149,7 +199,7 @@ def plot_pca_variance(data, labels = "ONeill", embedding = "clamp", name=None, c
     Returns:
         None
             
-    Image is saved as pca_variance_{name}.png, default name is the label(s) and embedding type.
+    Resulting image is saved as plots/embeddings/pca_variance_{name}.png, default name is the label(s) and embedding type.
     """
     if isinstance(labels, str):
         labels = [labels]
@@ -193,7 +243,7 @@ def plot_pca_pairs(data, labels = "ONeill", embedding = "clamp", name=None):
     Returns:
         None
             
-    Image is saved as pca_pairs_{name}.png, default name is the label(s) and embedding type.
+    Resulting image is saved as plots/embeddings/pca_pairs_{name}.png, default name is the label(s) and embedding type.
     """
     if isinstance(labels, str):
         labels = [labels]
@@ -222,26 +272,21 @@ def plot_pca_pairs(data, labels = "ONeill", embedding = "clamp", name=None):
     plt.savefig(f"plots/embeddings/pca_pairs_{name}.png")
     plt.close()
 
-
-
-def plot_distance_distribution(dists, name, t_step=0.05):
-
-    t_steps = math.ceil(1/t_step)
-    thresholds = [t_step*i for i in range(t_steps+1)]
-    thresholds[0] = -0.001 # to include the 0 distance
-
-    dist_counts = [sum([1 for d in dists if d > t and d <= t+t_step]) for t in thresholds]
-
-    plt.clf()
-    plt.bar(thresholds, dist_counts, width=t_step)
-    plt.xlabel("Distance threshold")
-    plt.ylabel("Number of distances")
-    #plt.title("Distribution of distances to output embedding")
-    plt.savefig(f"plots/distances/distribution_{name}.png")
-
-
 def plot_origin_distance(data, labels = "ONeill", embedding = "clamp", method="euclidean", name=None, t_step=0.2):
-
+    """
+    Plots the distribution of distances between embedded items for a specific set of labels and the origin.
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        labels (str or list[str]): the labels of the data subset to compute distances from.
+        embedding (str): The embedding type to use as data.
+        method (str): The method to use for distance computation.
+        name (str): A string used in the title and filename of the plot.
+        t_step (float): The step size for the distance groups in the resulting bar plot
+    Returns:
+        None
+            
+    Resulting image is saved as "plots/distances/origin_dist_{name}.png", default name is the labels + embedding + method.
+    """
     if isinstance(labels, str):
         labels = [labels]
     embeddings = extract_embeddings(data, labels, embedding)
@@ -272,7 +317,20 @@ def plot_origin_distance(data, labels = "ONeill", embedding = "clamp", method="e
 
 
 def plot_centroid_distance(data, labels = "ONeill", embedding = "clamp", method="euclidean", name=None, t_step=0.2):
-
+    """
+    Plots the distribution of distances between embedded items for a specific set of labels and their centroid (average).
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        labels (str or list[str]): the labels of the data subset to compute distances from.
+        embedding (str): The embedding type to use as data.
+        method (str): The method to use for distance computation.
+        name (str): A string used in the title and filename of the plot.
+        t_step (float): The step size for the distance groups in the resulting bar plot
+    Returns:
+        None
+            
+    Resulting image is saved as "plots/distances/centroid_dist_{name}.png", default name is the labels + embedding + method.
+    """
     if isinstance(labels, str):
         labels = [labels]
     embeddings = extract_embeddings(data, labels, embedding)
@@ -304,6 +362,17 @@ def plot_centroid_distance(data, labels = "ONeill", embedding = "clamp", method=
     plt.savefig(f"plots/distances/centroid_dist_{name}.png")
 
 def plot_distance_distribution(dists, name, t_step=0.05):
+    """
+    Plots the distribution of distances in a set of distances.
+    Args:
+        dists (list[float]): A list containing all the distances.
+        name (str): A string used as the filename of the plot.
+        t_step (float): The step size for the distance groups in the resulting bar plot.
+    Returns:
+        None
+            
+    Resulting image is saved as "plots/distances/distribution_{name}.png".
+    """
 
     t_steps = math.ceil(1/t_step)
     thresholds = [t_step*i for i in range(t_steps+1)]
@@ -317,9 +386,21 @@ def plot_distance_distribution(dists, name, t_step=0.05):
     plt.ylabel("Number of distances")
     #plt.title("Distribution of distances to output embedding")
     plt.savefig(f"plots/distances/distribution_{name}.png")
-
-
 def get_shortest_dists(data, label = "ONeill", embedding = "clamp", method ="cosine", name = None, N=10):
+    """
+    Finds a specified number of shortest distance pairs among embedded items of the specified label, and stores them on file.    
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        source_labels (str or list[str]): the labels of the data subset to compute distances from.
+        target_labels (str or list[str]): the labels of the data subset to compute distances to.
+        embedding (str): The embedding type to use as data.
+        method (str): The method to use for distance computation.
+        name (str): A string used in the title and filename of the plot.
+    Returns:
+        None
+            
+    Resulting image is saved as "plots/distances/shortest_dists_{name}.png", default name is the labels + embedding + method.
+    """
     if isinstance(label, str):
         label = [label]
     embeddings = extract_embeddings(data, label, embedding)
@@ -359,7 +440,7 @@ def plot_distance_average(data, source_labels = "ONeill", target_labels = None, 
     Returns:
         None
             
-    Image is saved as distance_average_{name}.png", default name is the source labels + target labels + embedding + method.
+    Resulting image is saved as plots/distances/average_{name}.png", default name is the source labels + target labels + embedding + method.
     """
      
 
@@ -414,9 +495,23 @@ def plot_distance_average(data, source_labels = "ONeill", target_labels = None, 
     plt.savefig(f"plots/distances/average_{name}.png")
 
 def local_dist_grid(data, label, embedding ="clamp", method = "cosine", name = None):
-    
+    """
+    Generates a grid plot of distances between embedded items for a specific label and saves it as a PNG file.
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        label (str): The label of the data subset to compute distances for.
+        embedding (str): The embedding type to use as data.
+        method (str): The method to use for distance computation.
+        name (str): A string used in the title and filename of the plot.
+    Returns:
+        None
+    Resulting image is saved as "plots/distances/grid_{name}.png", default name is the label + embedding + method.
+         
+    """
     embeddings = data[label][embedding]
     dists = compute_dist(embeddings, embeddings, method=method)
+    if name is None:
+        name = f"{label}_{embedding}_{method}"
 
     plt.clf()
     plt.imshow(dists, cmap='viridis', aspect='auto', interpolation='nearest')
@@ -424,52 +519,11 @@ def local_dist_grid(data, label, embedding ="clamp", method = "cosine", name = N
     #plt.title(f"Distance grid for {label} using {embedding}")
     plt.xlabel("Item index")
     plt.ylabel("Item index")
-    plt.savefig(f"plots/distances/grid_{label}_{embedding}_{method}.png")
+    plt.savefig(f"plots/distances/grid_{name}.png")
 
-def avg_distance_bars(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", name = None):
-
-    #print("avg distancse bar for ", source_labels, "to", target_labels, "using", embedding)
-    #TODO description
-    if isinstance(source_labels, str):
-        source_labels = [source_labels]
-    if target_labels is None:
-        target_labels = source_labels
-    if isinstance(target_labels, str):
-        target_labels = [target_labels]
-    source_embeddings = extract_embeddings(data, source_labels, embedding)
-
-    if name is None:
-        source_label_str = "-".join(source_labels)
-        name = f"{source_label_str}_{embedding}_{method}"
-
-    res = [0]*len(target_labels)
-    
-    for i, label in enumerate(target_labels):
-        target_embeddings = data[label][embedding]
-        #print("target embeddings:", target_embeddings)
-        #print("shape: ", target_embeddings.shape)
-        #print("source shape: ", source_embeddings.shape)
-        n_items = len(source_embeddings)
-        dists = [0]*len(source_embeddings)
-        for e in source_embeddings:
-            out_dists = compute_dist([e], target_embeddings, method=method)[0]
-            #TODO this can be optimized by computing the distance between all source and target embeddings at once
-            res[i] += np.average(out_dists)
-        res[i] /= n_items
-
-    #print("Distance stats: min {}, max {}, mean {}, median {}".format(np.min(dists_flat), np.max(dists_flat), np.mean(dists_flat), np.median(dists_flat)))
-
-    plt.clf()
-    plt.bar(target_labels, res)
-    plt.xlabel("Artist")
-    plt.xticks(rotation=30, ha="right", fontsize=16)
-    plt.ylabel("Average distance")
-    #plt.title(f"Avg distance for {name}")
-    plt.tight_layout()
-    plt.savefig(f"plots/distances/avg_dist_{name}.png")
 
 def plot_min_pos(extracted, id_map, label_map, name = None):
-
+    #TODO uhh description?
     unused_labels = set(label_map.keys())
     min_pos = [0] * len(unused_labels)
     for i, item in enumerate(extracted):
@@ -489,7 +543,7 @@ def plot_min_pos(extracted, id_map, label_map, name = None):
     plt.savefig(f"plots/distances/min_pos_{name}.png")
 
 def avg_min_pos(extracted, id_map, label_map, name = None):
-
+    #TODO uhh description
     
     min_pos = [0] * len(label_map)
 
@@ -517,7 +571,17 @@ def avg_min_pos(extracted, id_map, label_map, name = None):
 
 
 def plot_attribution(attribution, id_map, name, config_label = None):
-    #TODO maybe make this work directly on data dict?
+    """
+    Generates a plot of the resulting attribution values and saves it as a PNG file.
+    Args:
+        attribution (list[float]): A list containing the attribution values.
+        id_map (dict): A dictionary mapping indices in the attribution array to target artists.
+        name (str): A string used in the title and filename of the plot.
+        config_label (str): The attribution parameter configuration that was used to compute the attribution.
+    Returns:
+        None
+    Resulting image is saved as "plots/attribution/{config_label}/grid_{name}.png" or "plots/attribution/{config_label}/{name}.png" depending on the structure of the id_map artist names. 
+    """
 
     plt.clf()
     
@@ -598,7 +662,26 @@ def plot_attribution(attribution, id_map, name, config_label = None):
         plt.close()
 
 def plot_attribution_distribution(data, source_labels = "ONeill", target_labels = None, embedding = "clamp", method="cosine", name=None, top_N = None, dist_threshold = None, top_Y = None, attribution_threshold = None, config_label = None):
-    
+    """
+    Computes attribution between and generates plot depicting the attribution between two sets of category labels.
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        source_labels (str or list[str]): the labels of the data subset to compute attribution from.
+        target_labels (str or list[str]): the labels of the data subset to compute attribution to.
+        embedding (str): The embedding type to use as data.
+        method (str): The method to use for distance computation.
+        name (str): A string used in the title and filename of the plot.
+        top_N (int): The number of top attributions to consider.
+        dist_threshold (float): The distance threshold for considering attributions. 
+        top_Y (int): The number of top Y attributions to consider. 
+        attribution_threshold (float): The attribution threshold for considering attributions.
+        config_label (str): The text label for the attribution parameter configuration that was used to compute the attribution. 
+    Returns:
+        None
+    Two images are generated
+    - plots/attribution/{config_label}/distribution_{name}.png or plots/attribution/{config_label}/distribution_{name}_grid.png: A plot showing the distribution of the primary attribution artist.
+    - plots/attribution/{config_label}/average_{name}.png or plots/attribution/{config_label}/average_{name}_grid.png: A plot showing the average attribution to each target artist.
+    """
 
     if isinstance(source_labels, str):
         source_labels = [source_labels]
@@ -738,6 +821,41 @@ def plot_attribution_distribution(data, source_labels = "ONeill", target_labels 
         plt.close()
 
 
+def plot_modification_dist(A, B, name = None, config_label = None):
+    """
+    Generates a 2D grid plot of the difference between two attribution matrices and saves it as a PNG file.
+    Args:
+        A (np.ndarray): The first attribution matrix.
+        B (np.ndarray): The second attribution matrix.
+        name (str): A string used in the title and filename of the plot.
+        config_label (str): The attribution parameter configuration that was used to compute the attribution.
+    Returns:
+        None
+    Resulting image is saved as "plots/attribution/{config_label}/difference_{name}.png".
+    """
+    #TODO check that this works
+    # Create 2D grid plot
+    grid = B - A
+    all_meters = ["6_8", "2_4", "12_8", "3_2", "9_8", "3_4", "4_4"]
+    all_keys = ["Cdor", "Cmaj", "Cmix", "Cmin"]
+    fig, ax = plt.subplots(figsize=(max(10, len(all_meters) * 0.8), max(8, len(all_keys) * 0.8)))
+    
+    im = ax.imshow(grid, cmap='cool', aspect='auto', interpolation='nearest', vmin=-1, vmax=1)
+    
+    # Set ticks and labels
+    ax.set_xticks(range(len(all_keys)))
+    ax.set_yticks(range(len(all_meters)))
+    ax.set_xticklabels(all_keys, rotation=45, ha='right', fontsize=20)
+    ax.set_yticklabels(all_meters, fontsize=20)
+    
+    # Add colorbar
+    cbar = plt.colorbar(im, ax=ax)
+    cbar.set_label('Attribution difference', rotation=270, labelpad=15)
+    
+    
+    plt.savefig(f"plots/attribution/{config_label}/difference_{name}.png", bbox_inches='tight')
+
+
 
 def make_embedding_plots(data, labels, embeddings):
 
@@ -814,7 +932,6 @@ def make_distance_plots(data, source_labels, target_labels = None, embeddings = 
             name = label + "_" + embedding + "_item_" + str(e)
             plot_min_pos(extracted[e], id_map, label_map, name)
             avg_min_pos(extracted, id_map, label_map, name=label)
-            #TODO average min pos plot?
 
 def make_attribution_plots(data, source_labels, target_labels = None, embeddings = ["clamp"], methods = ["cosine"], configs = []):
 
@@ -846,10 +963,29 @@ def make_attribution_plots(data, source_labels, target_labels = None, embeddings
                     target_labels_copy.remove(label)
                 attribution, id_map, label_map = compute_attribution(data, source_labels=[label], target_labels = target_labels_copy, attribution_method = None, dist_method = methods[0], embedding = embedding, top_N = config[0], dist_threshold=config[1], top_Y=config[2], attribution_threshold=config[3])
 
-                #avg_distance_bars(data, [label], target_labels_copy, embedding)
                 
                 plot_attribution(random.choice(attribution), id_map, label + "_" + embedding, config_label = config_label)
                 plot_attribution_distribution(data, [label], target_labels, embedding, top_N = config[0], dist_threshold=config[1], top_Y=config[2], attribution_threshold=config[3], config_label = config_label)
+            
+            cmaj_68 = load_dump_file(f"plots/attribution/{config_label}/dump_folkrnn_v2-Cmaj-6-8_clamp_cosine.txt")
+            cmaj_44 = load_dump_file(f"plots/attribution/{config_label}/dump_folkrnn_v2-Cmaj-4-4_clamp_cosine.txt")
+
+            cmaj_68_to_cmaj_44 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:6-8_to_Cmaj_4-4_clamp_cosine.txt")
+            cmaj_68_to_cmin_68 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:6-8_to_Cmin_6-8_clamp_cosine.txt")
+            cmaj_68_to_cmin_44 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:6-8_to_Cmin_4-4_clamp_cosine.txt")
+            cmaj_44_to_cmin_68 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:4-4_to_Cmin_6-8_clamp_cosine.txt")
+            cmaj_44_to_cmin_44 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:4-4_to_Cmin_4-4_clamp_cosine.txt")
+            cmaj_44_to_cmaj_68 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:4-4_to_Cmaj_6-8_clamp_cosine.txt")
+            cmaj_68_to_cmix_32 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:6-8_to_Cmix_3-2_clamp_cosine.txt")
+
+            plot_modification_dist(cmaj_68, cmaj_68_to_cmaj_44, "Cmaj_M:6-8_to_Cmaj_4-4_clamp_cosine", config_label)
+            plot_modification_dist(cmaj_68, cmaj_68_to_cmin_68, "Cmaj_M:6-8_to_Cmin_6-8_clamp_cosine", config_label)
+            plot_modification_dist(cmaj_68, cmaj_68_to_cmin_44, "Cmaj_M:6-8_to_Cmin_4-4_clamp_cosine", config_label)
+            plot_modification_dist(cmaj_44, cmaj_44_to_cmin_68, "Cmaj_M:4-4_to_Cmin_6-8_clamp_cosine", config_label)
+            plot_modification_dist(cmaj_44, cmaj_44_to_cmin_44, "Cmaj_M:4-4_to_Cmin_4-4_clamp_cosine", config_label)
+            plot_modification_dist(cmaj_44, cmaj_44_to_cmaj_68, "Cmaj_M:4-4_to_Cmaj_6-8_clamp_cosine", config_label)
+            plot_modification_dist(cmaj_68, cmaj_68_to_cmix_32, "Cmaj_M:6-8_to_Cmix_3-2_clamp_cosine", config_label)
+
 
 
 def get_most_similar(data, source_label, target_labels, label_pos, embedding = "clamp", method = "cosine", N=5, out_file = None, dense = False):
