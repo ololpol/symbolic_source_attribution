@@ -17,7 +17,6 @@ import subprocess
 import glob
 import shutil
 
-oneilljigs_labels = ["ONeill","ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"] #TODO add more labels here as needed, these should correspond to the txt or abc files in data/
 secondary_labels = []  #Labels that should not be used to generate main plots
 #target_data_labels = ["ONeill", "output", "Folkwiki"]
 embeddings = ["clamp"] # options: "clamp", "clap", "muq", "folkrnn", "random"
@@ -36,6 +35,13 @@ else:
 
 
 def verify_folder_structure():
+    """
+    Verifies that all neccessary folders exist, and creates them if they don't. This includes the "data", "data/midi", "data/wav", and "cache" folders. Additionally, it calls the plotting.verify_plot_folder() function to ensure that the necessary plotting folders are present.
+    Args:
+        None
+    Returns:
+        None
+    """
     # Check if the necessary folders exist, and create them if they don't
     folders = ["data", "data/midi", "data/wav", "cache"]
     for folder in folders:
@@ -43,7 +49,19 @@ def verify_folder_structure():
             os.makedirs(folder)
     plotting.verify_plot_folder()
 
-def load_abc(data_path, folder = None):
+    #TODO check if a set of sub folders exist in the data folder, and create them if they don't
+
+
+def load_abc(data_path):
+    """
+    Loads a file with tokenized (space-separated) ABC data and returns the tunes, and token maps. The function reads the file, splits the data into tokens, and creates a set of unique tokens.
+    Args:
+        data_path (str): The path to the ABC data file.
+    Returns:
+        tunes (list): A list of tunes extracted from the ABC data.
+        idx2token (list): A list mapping indices to tokens.
+        token2idx (dict): A dictionary mapping tokens to indices.
+    """
     with open(data_path, 'r') as f:
         data = f.read().strip()
 
@@ -61,7 +79,13 @@ def load_abc(data_path, folder = None):
     return tunes, idx2token, token2idx
 
 def load_folder(folder_path):
-    # Load all .abc or .txt files in the folder and return a list of labels corresponding to the files found
+    """
+    Finds all .abc or .txt files in the folder and returns a list of labels corresponding to the files found.
+    Args:
+        folder_path (str): The path to the folder containing the .abc or .txt files.
+    Returns:
+        labels (list): A list of labels corresponding to the .abc or .txt files found in the folder.
+    """
     labels = []
     for filename in os.listdir(folder_path):
         folder_name = os.path.split(folder_path)[1]
@@ -74,7 +98,11 @@ def load_folder(folder_path):
 
 def format_abc(filename):
     """
-    Formats the tunes in a file in a way that can be processed by abc2midi. This may involve adding necessary headers, ensuring correct spacing, etc.
+    Formats the tunes in a file in a way that can be processed by abc2midi. 
+    Args:
+        filename (str): The path to the file containing the tunes to be formatted.
+    Returns:
+        None
     """
     subprocess.run(["python", "abc_processing.py", "--data_path", filename])
 
@@ -231,6 +259,14 @@ def assure_wav(label = "ONeill"):
 
 
 def extract_wav(label, id):
+    """
+    Creates a wav file from a midi file for a given label and id. Uses timidity to convert the midi file to wav format. The resulting wav file is saved in the appropriate folder.
+    Args:
+        label (str): The label in which the midi file is located.
+        id (int): The id of the tune within the label.
+    Returns:
+        wav_fname (str): The path to the created wav file.
+    """
     midi_fname = f"data/midi/{label}/{label}_labelled{id}.mid"
     if not os.path.exists(midi_fname):
         raise FileNotFoundError(f"No wav file found for label '{label}' and id '{id}'. Expected at '{midi_fname}'")
@@ -253,6 +289,16 @@ def extract_wav(label, id):
     return wav_fname
 
 def embed(data, embedding, use_cache = True, cache_label = ""):
+    """
+    Embeds the data using the specified embedding method. If use_cache is True, it will check if the embeddings have already been computed and stored in a cache file. If so, it will load the embeddings from the cache instead of recomputing them.
+    Args:
+        data (dict): A dictionary containing the data to be embedded. It should have keys "abc" for ABC data and "wav" for WAV data.
+        embedding (str): The embedding method to use. Options are "clamp", "clap", "muq", or "random".
+        use_cache (bool): Whether to use cached embeddings if available. Default is True.
+        cache_label (str): A label to specify the cache file name. 
+    Returns:
+        np.array: An array of embedded data.
+    """
     embedding = embedding.lower()
 
     # check if the embedded data exists in cache, if so load it instead of recomputing
@@ -279,8 +325,6 @@ def embed(data, embedding, use_cache = True, cache_label = ""):
     elif embedding == "muq":
         print("Embedding", cache_label, "with MuQ-MuLan model")
         res = muq(data["wav"])
-    elif embedding == "folkrnn":
-        res = folkrnn_embed(data["abc"])
     elif embedding == "random":
         res = [[2*random.random() - 1 for _ in range(512)] for _ in data["abc"]]
     else:
@@ -294,6 +338,13 @@ def embed(data, embedding, use_cache = True, cache_label = ""):
     return np.array(res)
     
 def clamp(tunes):
+    """
+    Embeds the tunes using the CLaMP model. 
+    Args:
+        tunes (list): A list of tunes in ABC format to be embedded.
+    Returns:
+        res (list): A list of embedded tunes.
+    """
     res = []
 
 
@@ -326,6 +377,13 @@ def clamp(tunes):
     return res
 
 def clap(tune_fname):
+    """
+    Embeds the tunes using the CLAP model. 
+    Args:
+        tune_fname (str): The path to the directory containing the tune files.
+    Returns:
+        res (list): A list of embedded tunes.
+    """
     import laion_clap
 
     res = []
@@ -354,6 +412,13 @@ def clap(tune_fname):
     return res
 
 def muq(tune_fname):
+    """
+    Embeds the tunes using the MuQ-MuLan model. 
+    Args:
+        tune_fname (str): The path to the directory containing the tune files.
+    Returns:
+        res (list): A list of embedded tunes.
+    """
     res = []
 
     fnames = os.listdir(tune_fname)
@@ -385,15 +450,17 @@ def muq(tune_fname):
             print("Extracted MuQ-MuLan embeddings for {} / {} wav files".format(i, n_files))
     return res
 
-def folkrnn_embed(tunes):
-    res = []
-    for t in tunes:
-        res.append([2*random.random() - 1 for _ in range(100)])
-        pass#TODO
-    return res
 
 
 def embed_all(data, embeddings):
+    """
+    Embeds all data in the provided dictionary using the specified embedding methods. The embedding is done for all keys in the data directory.
+    Args:
+        data (dict): A dictionary containing the data to be embedded. It should have keys corresponding to the labels in the data directory.
+        embeddings (list): A list of embedding methods to use. Options are "clamp", "clap", "muq", or "random".
+    Returns:
+        data (dict): The input data dictionary with the embedded data added under each label and embedding method.
+    """
     for label in data.keys():
         for embedding in embeddings:
             embedded_data = embed(data[label], embedding, cache_label = label)
@@ -406,6 +473,15 @@ def embed_all(data, embeddings):
     return data
 
 def compute_dist(source, data, method):
+    """
+    Computes distances between two sets of embeddings.
+    Args: 
+        source (list): A list of source embeddings.
+        data (list): A list of target embeddings.
+        method (str): The distance computation method to use. Options are "euclidean" or "cosine"
+    Returns:
+        dists (np.array): A 2D array of distances between each source embedding and each target embedding.
+    """
     if isinstance(source[0], float) or isinstance(source[0], int):
         source = [source]
 
@@ -470,8 +546,22 @@ def compute_dist(source, data, method):
 
 def compute_attribution(data, source_labels, target_labels, attribution_method = None, dist_method = "cosine", embedding = "clamp",
     top_N = None, dist_threshold = None, top_Y = None, attribution_threshold = None, extract_N = None, extract_write = True):
-    # Compute attribution scores the output embedding with respect to the data embeddings using the specified method
-
+    """
+    Computes the attribution from tunes in source_labels to tunes in target_labels using the specified embedding and distance methods. 
+    Args:
+        data (dict): A dictionary containing the data to be used for attribution. It should have keys corresponding to the labels in the data directory.
+        source_labels (list): A list of labels in the data for which to compute attribution from.
+        target_labels (list): A list of labels in the data for which to compute attribution to.
+        attribution_method (str): The method to use for computing attribution. Currently not implemented.
+        dist_method (str): The distance computation method to use. Options are "euclidean" or "cosine". Default is "cosine".
+        embedding (str): The embedding method to use. Options are "clamp", "clap", "muq", or "random". Default is "clamp".
+        top_N (int): If specified, only the top N closest target tunes to each tune will be considered for attribution computation.
+        dist_threshold (float): If specified, only target tunes within this distance threshold will be considered for each source tune attribution computation
+        top_Y (int): If specified, only the top Y artists with the highest attribution scores will be returned in the final attribution scores.
+        attribution_threshold (float): If specified, only artists with an attribution score above this threshold will be considered in the final attribution scores.
+        extract_N (int): If specified, extracts the top N closest items for each output embedding with distance threshold dist_threshold. Default is None.
+        extract_write (bool): If True, writes the extracted items to a file. Default is True.
+    """
     #TODO more ways to do this
     
     id_map = {}
@@ -633,6 +723,13 @@ def compute_attribution(data, source_labels, target_labels, attribution_method =
     return res, id_map, label_map
 
 def get_data(labels):
+    """
+    Loads the data for the specified labels.
+    Args:
+        labels (list): A list of labels for which to load the data. Each label should correspond a file in the "data" folder with either a .abc or .txt extension.
+    Returns:
+        data (dict): A dictionary where each key is a label and the value is another dictionary containing the loaded ABC data and the path to the corresponding WAV files.
+    """
     data = {}
 
     
@@ -668,6 +765,11 @@ if __name__ == "__main__":
     output_key = load_folder("data/folkrnn_key")
 
     output_modified = load_folder("data/modified")
+    oneilljigs_labels = load_folder("data/ONeill")
+
+    
+    #["ONeill","ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"] 
+
 
     #source_label_list = [output_modified, output_both, output_meter, output_key, oneilljigs_labels]
     #source_label_list = [output_meter, output_key, output_modified]

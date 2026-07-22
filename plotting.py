@@ -858,6 +858,16 @@ def plot_modification_dist(A, B, name = None, config_label = None):
 
 
 def make_embedding_plots(data, labels, embeddings):
+    """
+    Creates embedding plots for the specified labels and embeddings.
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        labels (list[str]): A list of labels in the data for which to create embedding plots.
+        embeddings (list[str]): A list of embedding types to use for the plots.
+    Returns:
+        None
+    Resulting images are saved in the "plots/embeddings/" directory.
+    """
 
     print("Making embedding plots for", labels, "using", embeddings)
 
@@ -886,6 +896,19 @@ def make_embedding_plots(data, labels, embeddings):
 
 
 def make_distance_plots(data, source_labels, target_labels = None, embeddings = ["clamp"], methods = ["cosine"]):
+    """
+    Creates distance plots for the specified labels and embeddings.
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        source_labels (list[str]): A list of labels in the data for which to create distance plots from.
+        target_labels (list[str]): A list of labels in the data for which to create distance plots to.
+        embeddings (list[str]): A list of embedding types to use for the plots.
+        methods (list[str]): A list of distance computation methods to use for the plots.
+    Returns:
+        None
+    Resulting images are saved in the "plots/distance/" directory.
+    """
+    
     if target_labels is None:
         target_labels = source_labels
 
@@ -934,6 +957,19 @@ def make_distance_plots(data, source_labels, target_labels = None, embeddings = 
             avg_min_pos(extracted, id_map, label_map, name=label)
 
 def make_attribution_plots(data, source_labels, target_labels = None, embeddings = ["clamp"], methods = ["cosine"], configs = []):
+    """
+    Creates attribution plots for the specified labels and embeddings.
+    Args:
+        data (dict): A dictionary containing the data to be plotted.
+        source_labels (list[str]): A list of labels in the data for which to compute attribution from.
+        target_labels (list[str]): A list of labels in the data for which to compute attribution to.
+        embeddings (list[str]): A list of embedding types to use for the plots.
+        methods (list[str]): A list of distance computation methods to use for the plots.
+        configs (list[tuple]): A list of tuples containing the attribution parameter configurations to use for the plots. Each tuple should contain the following values in order: (top_N, dist_threshold, top_Y, attribution_threshold).
+    Returns:
+        None
+    Resulting images are saved in the "plots/attribution/" directory.
+    """
 
     if target_labels is None:
         target_labels = source_labels
@@ -989,6 +1025,22 @@ def make_attribution_plots(data, source_labels, target_labels = None, embeddings
 
 
 def get_most_similar(data, source_label, target_labels, label_pos, embedding = "clamp", method = "cosine", N=5, out_file = None, dense = False):
+    """
+    Find the N most similar items to a specific item from a source label in the data, based on specified target labels, embedding and distance method. The results can be printed or saved to a file.
+    Args:
+        data (dict): A dictionary containing the data to be analyzed.
+        source_label (str): The label of the source data subset to find similar items from.
+        target_labels (list[str]): The labels of the target data subsets to find similar items to.
+        label_pos (int): The position of the item in the source label's data to find similar items for.
+        embedding (str): The embedding type to use as data.
+        method (str): The method to use for distance computation.
+        N (int): The number of most similar items to find.
+        out_file (str): Optional. If provided, the results will be saved to this file
+        dense (bool): Optional. If True, the output will be more compact, showing only the ABC notation of the tunes. Default is False.
+    Returns: 
+        None.
+    
+    """
     item = data[source_label][embedding][label_pos]
 
 
