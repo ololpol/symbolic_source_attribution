@@ -1,4 +1,7 @@
-
+"""
+This is the main file that performs all the experiments.
+If the neccecarry previous files aren't ran, this file runs them.
+"""
 import math
 import os
 import pysynth
@@ -755,6 +758,15 @@ def get_data(labels):
 if __name__ == "__main__":
 
     verify_folder_structure()
+    if not os.path.exists("data/grouped_both") or not os.path.exists("data/grouped_meter") or not os.path.exists("data/grouped_key"):
+        #run data_process.py if not ran to create grouped training data
+        subprocess.run(["python", "data_process.py"])
+    if not os.path.exists("data/folkrnn_both") or not os.path.exists("data/folkrnn_meter") or not os.path.exists("data/folkrnn_key"):
+        #run output_data_parse.py if not ran to create grouped output data
+        subprocess.run(["python", "output_data_parse.py"])
+    if not os.path.exists("data/modified"):
+        #run data_modification.py if not ran to create modified data
+        subprocess.run(["python", "data_modification.py"])
 
     data_both = load_folder("data/grouped_both")
     data_meter = load_folder("data/grouped_meter")
@@ -786,6 +798,7 @@ if __name__ == "__main__":
     #default_name_list = ["modified", "both", "meter", "key", "oneill"] #"oneill", 
     default_name_list = ["both"]
     #default_name_list = ["oneill"]
+
     if len(source_label_list) != len(target_label_list):
         raise ValueError("Source and target label lists must have the same length")
     
