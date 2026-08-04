@@ -1,3 +1,8 @@
+"""
+This file reads through all data in the data/data_v2 file and generates grouped data based on key and meter.
+The resulting groups of data are located in the grouped_key, grouped_meter and grouped_both directories. Each of theese directories contain all data in the data_v2 file subdividied in different ways.
+"""
+
 import os
 from pathlib import Path
 from typing import Dict, List, Tuple, Iterator, Union
@@ -123,9 +128,7 @@ def save_grouped_data_to_files(grouped: Dict[Union[Tuple[str, str], str], List[D
 if __name__ == "__main__":
     data_dir = Path("data/data_v2")
     first_items = read_first_n_data_items(data_dir, 99999)
-    
-    # Save all data to a single file
-    save_all_data_to_file(first_items, Path("data/all_data.txt"))
+
     
     # Group and save by both meter and key (default)
     grouped_both = group_data_by_meter_key(first_items, group_by="both")

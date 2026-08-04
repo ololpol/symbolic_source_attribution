@@ -1,3 +1,8 @@
+"""
+This file generates data files containing the output data grouped by key or meter, from the RNN-generated files stored in the data/folkrnn_folder
+
+The grouped data is stored in the data/folkrnn_key and data/folkrnn_meter folders
+"""
 import re
 from pathlib import Path
 

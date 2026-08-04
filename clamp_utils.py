@@ -1,3 +1,8 @@
+"""
+This file contains helper functions used to process ABC notation data and extract features using the CLaMP model.
+"""
+
+
 import re
 import os
 import torch

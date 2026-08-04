@@ -1,3 +1,13 @@
+"""
+This file generates files containing modified tunes.
+
+Theese modified tunes are the Cmaj 4/4 tunes and the Cmaj 6/8 tunes, where the key and/or meter field at the start of the tune is modified
+
+The modified tunes are stored in the data/modified folder
+
+"""
+
+
 import os
 def load_abc(data_path, folder = None):
     with open(data_path, 'r') as f:

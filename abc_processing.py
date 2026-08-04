@@ -1,9 +1,18 @@
+"""
+This file modifies data files to a format in which they can be processed by abc2midi. This is used whem embedding using CLAP or MUQ.
+Abc2midi can then be applied on the resultant file to generate a midi file, which in turn can be made into a wav file that the audio embeddings operate on.
+
+The resulting file is stored in the same location, but has the "_labelled" ending added to its filename.
+
+"""
+
+#python abc_processing.py --data_path data/ONeill.abc
+
 import argparse
 parser = argparse.ArgumentParser(description='Process ABC notation data.')
 parser.add_argument('--data_path', type=str, default='data/ONeill.abc', help='Path to the ABC notation data file.')
 args = parser.parse_args()
 
-#python abc_processing.py --data_path data/ONeill.abc
 
 def load_abc(data_path):
     with open(data_path, 'r') as f:

@@ -1,3 +1,15 @@
+"""
+This file contains all the relevant plotting functions that generate the results
+
+All the generated plots, figures, and text files are stored in the plots folder.
+
+The plots folder contains 4 different subfolders that contain different types of results
+- The attribution folder contains the results concerning where attribution goes, for different combinations of data and attribution parameters.
+- The data folder contain the plots describing the structure of the data.
+- The distances folder contain results regardin the distances between tunes in the various categories.
+- The embeddings folder contain results dealing with the behavior and structure of the embedded data.
+"""
+
 import matplotlib.pyplot as plt
 import math
 from sklearn.decomposition import PCA
