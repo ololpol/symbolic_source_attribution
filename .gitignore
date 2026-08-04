@@ -1,7 +1,9 @@
 .idea/
 *.pyc
 *.pkl
-data/
+cache/
+data/midi
+data/wav
 *.egg-info
 .venv/
 muzic/

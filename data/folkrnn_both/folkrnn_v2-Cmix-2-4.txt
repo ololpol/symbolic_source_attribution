@@ -1,0 +1,160 @@
+M:2/4
+K:Cmix
+|: g 2 g > a | g 2 f g | a 2 a g | f 2 f f /2 g /2 | a 2 a g | c 2 c > a | g f d c /2 d /2 | c 2 g 2 :| c' > b a g | f 2 f > g | a f g a | b 2 b g | c' > b a g | a f f > a | g f d c | d 2 c 2 | c' 2 b a | g 2 g f | f > g a f | c 2 c B /2 c /2 | d 2 d f | f 2 d > e | f d d f | c 2 c 2 |
+
+M:2/4
+K:Cmix
+| G 2 c d | c d e f | g c c' 2 | a g e g | e 2 d e | c d g e /2 d /2 | e 3 d | c 2 c e | d 3 c | d c e d | c 3 d | e /2 d /2 e /2 f /2 g e | d > c e c | d 2 c d | e 2 d c | c 3 d |: c 3 e | g 3 a /2 g /2 | a c e 2 | g 2 g 2 | a 2 g e | d 2 c e | e > d e g | c 2 g a /2 g /2 | a 2 g e | g 2 e d | c < c' e /2 d /2 c /2 d /2 | e 2 e d | c 2 c d | e 2 e /2 d /2 c /2 d /2 | e c g e |1 d 2 c /2 d /2 c /2 B /2 :| |2 d 2 c e /2 f /2 |
+
+M:2/4
+K:Cmix
+C D |: E > D E G | c > d e c | B G G F | E D E F | E D E G | c > d e c | B G G F |1 G 2 C D :| |2 G 2 c d |: e > f g e | f /2 g /2 f e e /2 f /2 | g > f e c | B G G 2 | e > f g e | f f e /2 c /2 B /2 G /2 | B G F D |1 C 2 C > d :| |2 C 2 C E |
+
+M:2/4
+K:Cmix
+e > g g c | e c a g | e c g e | d c a 2 | e g g c | e f g a | e > f g c | d c c 2 :| |: d > e d g | a g a 2 | d e g a | g a g 2 | d > e d c | a g e g | a > g e g | d c c 2 :|
+
+M:2/4
+K:Cmix
+|: C > D E F | G /2 A /2 G /2 ^F /2 G A /2 B /2 | c B A G | A > G F B | c > =B c B | A > G F E | F A F F | C 2 C 2 :| |: G c B c | A G A B | c 2 B > A | G 2 F > E | G c B c | A G A B | c > B A G | C 2 C 2 :|
+
+M:2/4
+K:Cmix
+|: e 2 e > f | g e c > d | e c /2 d /2 e c | B G G > d | e 2 e > f | g e c c | B G /2 A /2 B /2 c /2 d /2 B /2 | c 2 c > d :| |: e 2 e /2 f /2 g /2 f /2 | e c c 2 | B 2 d > e | f d g f | e 2 e f /2 g /2 | e c c > d | e c d /2 e /2 f /2 d /2 | c 2 c > d :|
+
+M:2/4
+K:Cmix
+g a /2 a /2 g e | f a g f | e 2 d e | f d c 2 | g a /2 g /2 f e | f g a f | g e c d /2 e /2 | f d c 2 :| c' c' /2 g /2 e g | a f g e | c d /2 e /2 f g | a f g 2 | c' c' /2 g /2 e g | a f f a | g e /2 d /2 c e | f d c 2 :|
+
+M:2/4
+K:Cmix
+|: G c e /2 f /2 g /2 a /2 | b /2 c' /2 b /2 a /2 b g /2 f /2 | e /2 d /2 c /2 B /2 G F /2 E /2 | F /2 G /2 A /2 B /2 c B | G c e /2 f /2 g /2 a /2 | b c' b g | f d B /2 A /2 B /2 G /2 | c 2 c 2 :| |: c' c c c' /2 b /2 | g f d g | a g /2 f /2 e d /2 e /2 | f d B G | c' c c b /2 a /2 | b g f g | f /2 e /2 d /2 e /2 f /2 e /2 d /2 c /2 | B > c c B :|
+
+M:2/4
+K:Cmix
+|: c 2 c 2 | B d f > f | e c c 2 | d B B 2 | c c c 2 | c d f 2 | e g a 2 | c 2 c 2 :| |: d > c f d | c c c 2 | d f f d | c 2 c 2 | d > c B d | c B B 2 | c d g f | c 2 c 2 :|
+
+M:2/4
+K:Cmix
+C 2 C > D | E G A B | c 2 B G | A /2 B /2 A /2 G /2 E D | C 2 C > D | E G A B | c B /2 G /2 A > B | G E D 2 :| C > D E G | A B c > B | A G A B | A G E D | C > D E G | A B c 2 | A G A /2 B /2 c | A G E 2 :| |: E G A G | E G A G | A G A /2 B /2 c /2 A /2 | G E D > E | C G A G | c B /2 c /2 A G | E /2 F /2 G A B | c A G 2 :|
+
+M:2/4
+K:Cmix
+|: f | g > e f e | d c B > c | d f e c | d f f f | g > e f d | e c B 2 | d f e f | f d c :| |: d | e < e e e | f g a < c' | d < c d e | f < g f d | e > e e e | f g e f | d < c e f | d c c :|
+
+M:2/4
+K:Cmix
+G A | G c d e | f d e f | g 2 c /2 d /2 e | f e d 2 | G c c d | e g f d | e c d /2 c /2 B | G 2 |: c d | e c f d | e c f d | e c f d | e d c 2 | e c f d | e c f d | e c d B | c 2 :|
+
+M:2/4
+K:Cmix
+e f g a | g f e d | c d e f | g a a g /2 f /2 | e f g f | e d e /2 f /2 g | c' a g e |1 d 2 f a :| |2 d 2 B 2 |: g 2 a c' | b g a f | e a g e | f e d e | g 2 a g /2 a /2 | c' b a g | f g f e |1 d 2 g a :| |2 d 2 e f |: g c' c' d' | c' b a g | f e f g | a b c' a |1 g c' c' d' | c' b a g | f e d e | d 4 :| |2 g b a f | e f g 2 | f g a b | a 4 |
+
+M:2/4
+K:Cmix
+|: c /2 d /2 | e > d e f | g e e 2 | g /2 a /2 b /2 c' /2 b /2 a /2 g /2 f /2 | e c d 2 | e /2 f /2 e /2 d /2 e c | d e e e /2 f /2 | g e e d /2 e /2 | f d d :| d /2 e /2 f /2 g /2 | a f d /2 e /2 f /2 d /2 | e c f > d | e /2 d /2 c /2 B /2 A B /2 A /2 | G > A B /2 A /2 G /2 A /2 | B /2 A /2 G /2 A /2 B > A | G /2 A /2 G /2 F /2 E F | C G G :| f /2 e /2 d /2 f /2 | e g c > d | e G c f | e /2 d /2 e /2 f /2 g e /2 e /2 | f > g f > d | c A G E | F G A B | c /2 G /2 E /2 G /2 c :|
+
+M:2/4
+K:Cmix
+|: b | g c c > e | g a g 2 | f d d /2 e /2 f /2 d /2 | B d c d | f c e d | c g a b | c' > b a f | g e c :| |: g /2 a /2 | c' g a g | c g c' a /2 a /2 | g a /2 g /2 f d | f e e f /2 g /2 | c' c /2 a /2 g g | c' g e g /2 a /2 | b B d /2 e /2 f /2 d /2 | c 2 c :|
+
+M:2/4
+K:Cmix
+g |: e c e /2 d /2 c | e f g /2 f /2 e | d c d /2 e /2 f | d B B /2 A /2 B | c 2 g e | d c g f | e d c 2 | B 2 B B | e /2 d /2 c g e | f d B /2 c /2 d | e e /2 d /2 c c | e d e f | g 2 g e | d /2 e /2 f B c | B G c d | e 2 f 2 | g c' /2 g /2 c' /2 g /2 e | g c' /2 c' /2 g e | f d /2 e /2 f d | B d f /2 e /2 d | g e /2 g /2 c' g | g c' c' /2 g /2 e /2 g /2 | f d B d | e 2 c 2 :|
+
+M:2/4
+K:Cmix
+|: c' > a g /2 a /2 g | f d e > d | c d /2 e /2 f > g | a c g f /2 a /2 | c' > a g /2 a /2 g | e /2 d /2 c g > a | b g /2 f /2 e c | d c c 2 :| |: e g c e /2 g /2 | a g /2 a /2 g e | d /2 e /2 d /2 e /2 f a /2 g /2 | f d d c' | e g c e /2 f /2 | g a /2 g /2 e > g | a g /2 f /2 e /2 d /2 c /2 d /2 | e c c 2 :|
+
+M:2/4
+K:Cmix
+|: c /2 d /2 | e d /2 e /2 f g /2 a /2 | g e d c /2 d /2 | e g /2 a /2 b g | a d d e /2 f /2 | g > a g /2 e /2 d /2 c /2 | d f /2 e /2 d c /2 B /2 | A > A A /2 A /2 G /2 E /2 | D /2 D /2 E /2 F /2 G :| f |: e g /2 e /2 d e /2 d /2 | c d /2 e /2 d /2 c /2 A /2 G /2 | A /2 B /2 c /2 A /2 G /2 A /2 G /2 E /2 | D /2 E /2 F /2 G /2 A G /2 A /2 | G > E G c | c g e d | c > d e g /2 a /2 | g e c :|
+
+M:2/4
+K:Cmix
+|: G 2 | c 4 | c 2 c 2 d 2 e 2 | f 2 d 2 c 2 B c | d 2 (3 G A G d 2 c B | c 2 c 2 c 2 d c | B 2 G 2 G 2 c 2 | B 2 F 2 B 2 d f | e 2 d 2 c 2 B c | d 2 d 2 B 2 c B | A 2 F 2 c 4 | c 3 d c 2 B 2 | G 2 F 2 B 2 d 2 | c 2 c B c 2 c d | e 2 c 2 c 2 f 2 | d c B c d 2 g 2 | c 4 B 2 G 2 | c 2 c 2 c 2 f d | c 2 c 2 c 2 d e | f e c A B 2 A 2 | B 2 F 2 B 2 f f | g 2 f 2 f e d e | c 2 c 2 c 2 B d | c B A F G 2 F 2 | F 2 F 2 F 2 c 2 | c 2 c 2 c 2 d f |
+
+M:2/4
+K:Cmix
+|: g e | d > c c B | G A B > c | d c f d | d 2 d > c | B > c B d | G A B > c | d e f d | c 2 :| |: e f | g > a g f | g < c' c' b | g a b g | f d /2 c /2 B c | g f (3 g a b | c' > b g f | d > e f d | c 2 :|
+
+M:2/4
+K:Cmix
+|: c > d e f | g c' c' b /2 g /2 | f d f d | c > d e g | c > d e f | g c' c' b /2 g /2 | f d B d /2 d /2 |1 c 2 c 2 :| |2 c 2 c 2 |: c' > a g a | b > c' b g | f d b d | c d f 2 | c' > d' c' b | a c' g a | f g /2 f /2 d c |1 c 2 c a :| |2 c 2 a > f |
+
+M:2/4
+K:Cmix
+|: G c d e /2 f /2 | g c d B | G A B A | G E F D | G c d /2 e /2 d /2 c /2 | B G B f | e c B G | G 2 c 2 :| |: e c c > d | e g f d | B A B A | B G F D | C > D E G | c f f d | e c f d | c 2 c 2 :|
+
+M:2/4
+K:Cmix
+|: c > d c B | G A B 2 | c d c B | G A B > A | c > d c B | G A B 2 | c > d c B | G A B 2 :| |: G > A G F | E G c G /2 G /2 | A /2 B /2 c /2 B /2 A G | F D E 2 | E > F G F | G G A G | c > d c c | B G F > D :|
+
+M:2/4
+K:Cmix
+|: g > f | e < c d /2 e /2 f /2 a /2 | g c' c' /2 a /2 g /2 f /2 | e c e > d | c B d f /2 e /2 | f c' g /2 a /2 b /2 c' /2 | g c' e /2 f /2 g /2 a /2 | b > a g g /2 f /2 | e c c 3/2 :| |: g /2 | b a g a /2 b /2 | c' g a f | b 2 g a /2 e /2 | f d B z | g > a b a | g c' g f | e c g /2 a /2 g | f 2 z :|
+
+M:2/4
+K:Cmix
+a b /2 a /2 g f | e f g > a | f g f d | f d d 2 | b a /2 g /2 f d | e c d /2 e /2 f /2 d /2 | c > d B d | c 2 c :| |: g /2 a /2 b c' /2 b /2 a /2 b /2 | c' a b > a | g e f > d | c B d f | g a /2 b /2 c' b | a g a > f | g /2 c' /2 b /2 a /2 g f | d 2 c :|
+
+M:2/4
+K:Cmix
+|: g f | e 2 d c /2 f /2 | e c c =B /2 c /2 | d B B 2 | d c B d | e 2 d > c | d B c > d | e c d =B | c 2 :| |: B c | d g g f | e g g > a | b 3 b /2 a /2 | b a g f | e g g a /2 b /2 | c' g f e | d e /2 f /2 g f | e 2 :|
+
+M:2/4
+K:Cmix
+G > F E C | B, C D E | F > E F G /2 A /2 | B c B /2 A /2 G | F > E C D | E C C > B, | C B, 2 C | C 2 C 2 :| |: G f /2 e /2 d c | B d c 2 | G d c B | c g /2 f /2 g 2 | B c /2 B /2 A E | F E F G | F E C B, | C 2 C 2 :|
+
+M:2/4
+K:Cmix
+A |: A G F G | c A B G | c B /2 A /2 G F | F G A /2 G /2 F | A G /2 G /2 F G | c B c d | e f /2 e /2 d /2 c /2 B | c B B G :| |: c e f e | c B G F | E G A F | A G G B | c e f e | c B G /2 B /2 c | B G F G | A 2 A G :|
+
+M:2/4
+K:Cmix
+G, f |: B, |: C 2 D F | G G G F | D G F D | D C C D | C 2 D F | G F G B | c B G F | D C /2 B, /2 C D | C 4 :| |: D 2 G 2 | B G F D | C 2 D 2 | C 2 D F | G 2 F G | B G F D | C 2 B, 2 | C 4 :|
+
+M:2/4
+K:Cmix
+A B /2 A /2 | G A G 2 | A G E /2 F /2 G | A /2 B /2 A G E | D 3 G | A B /2 A /2 G E | F D G C | G > A G E | D 2 C /2 F /2 G | A B /2 A /2 G A | A G E > D | C D D E /2 D /2 | C 2 C 2 | A G /2 A /2 B /2 c /2 B /2 A /2 | G E D C | A G /2 E /2 D E /2 D /2 | C 2 | G < C | D 3 G | D > C E C | D C C > A | G 2 G A /2 B /2 | c c c A /2 B /2 | A G E /2 F /2 G | A G E G | A 2 :| c G A c | d > e d c | A G E G | A 2 c 2 | G c e d | A G A B | A G E C | D 2 :| d c /2 A /2 G | E G D G | e d /2 e /2 g e | d G c B | c d e g | d G A /2 B /2 c | d G A G | A 2 :|
+
+M:2/4
+K:Cmix
+|: F 2 F B | G 2 F A | F D F A | B 2 B 2 | F G F D | F 2 B c | B G F D | F 2 F 2 :| D B B > D | B 2 G B | c 2 c > B | G 2 G > F | F D D F | B 2 B > c | B 2 G > F | D 2 C 2 |
+
+M:2/4
+K:Cmix
+|: F /2 D /2 C /2 B, /2 C C | F /2 E /2 D /2 F /2 G F | D /2 D /2 F /2 D /2 D F | F /2 G /2 A /2 B /2 G F | F /2 G /2 F /2 D /2 C C | D F G A /2 B /2 | c > c B G | F D C 2 :| |: G F G c | B /2 A /2 G /2 F /2 D F /2 G /2 | c d B c | d B c /2 B /2 G /2 F /2 | G F G c | B > F D G | F D F G |1 F D C 2 :| |2 F D C 2 |
+
+M:2/4
+K:Cmix
+|: B, /2 B, /2 D E C | G E D E | C > B, E D | E E E D /2 C /2 | B, > D E D | C E F G /2 A /2 | G E /2 F /2 E C | D 4 :| |: E > C C A | G E C A | E > C A G | E C D 2 | E > D C A | G E C A | G 2 C D | E 4 :|
+
+M:2/4
+K:Cmix
+G 2 A B /2 c /2 | B A B /2 A /2 G | E 2 E > D | C A, F 2 | G 2 A > c | B A G B /2 A /2 | G C B, G, |1 C 2 C D :| |2 C E G 2 | c 2 d > c | B G B A | G e A > B | c E E 2 | B, 2 B, 2 | G, A, B, C | C 2 C D |1 E E E D :| |2 E E D > F |
+
+M:2/4
+K:Cmix
+G F D C | G G F 2 | G F D C | D F F F | G F D C | G F G > A | B G F D | C 2 :| C E /2 F /2 G c | B G A c | B G A F | G F D /2 C /2 B, | C D /2 E /2 F G | B c d > c | B G F D | C 2 :| G 3 c G /2 A /2 G | G 2 A B /2 c /2 | B G F D | G 2 F E /2 F /2 | G 3 c B G | G 2 A > B | G F D C | C 4 :|
+
+M:2/4
+K:Cmix
+G e d c | B G F 2 | G A B G | c G F D | G e d c | B G F 2 | G A B G | c 2 c 2 :| |: G > A B G | F D C 2 | F > E F D | G A B > G | G > A B G | F D C 2 | G A B G |1 C 2 C 2 :| |2 C 2 C D |
+
+M:2/4
+K:Cmix
+G /2 A /2 G /2 F /2 E /2 C /2 D /2 E /2 | C C E > D | C D B, > G, | C D /2 E /2 F E /2 D /2 | G 2 F G /2 F /2 | E D C > D | C D E F /2 D /2 | C 2 c > A | B G A F | G C C D /2 E /2 | F E C B, | C 3 | c =B G B | c G B A | G E C E /2 D /2 | C 2 z 2 | c > =B c d | c 2 B G | F 2 F /2 E /2 F | E D C /2 D /2 E | c 2 B G | c 2 B G /2 F /2 | G G G /2 A /2 B | c 2 c B | c 2 c > d | c 2 B G /2 F /2 | E > D E F | G /2 F /2 E /2 D /2 C G | F D D G | C 2 C /2 D /2 E /2 F /2 | B > G F D | C 3 |
+
+M:2/4
+K:Cmix
+E /2 F /2 | G E C > F | G E F /2 G /2 A /2 B /2 | c G F /2 E /2 D /2 E /2 | F D D F /2 G /2 | E D C E /2 F /2 | G E F /2 G /2 A | B A B /2 A /2 G /2 F /2 | D E C :| F |: G > E F G | c B A 2 | B c /2 B /2 A B | A F D E | F /2 E /2 F /2 G /2 F E | G F G B /2 A /2 | G /2 F /2 E /2 F /2 G > E | D C C :|
+
+M:2/4
+K:Cmix
+|: e d /2 e /2 f d | g f e d /2 e /2 | f > e d c | B d a f | e d /2 e /2 f d | g f e d /2 e /2 | f d /2 c /2 B d | d c c 2 :| |: g g /2 a /2 b g | c' > a g f | e f a > e | d c B d | g c' /2 a /2 g e | g a /2 b /2 c' b | g a /2 g /2 f e | d c c 2 :|
+
+M:2/4
+K:Cmix
+|: G /2 A /2 G /2 F /2 E C | E F B 2 | G /2 A /2 G /2 F /2 E /2 D /2 C | F D D F | G /2 A /2 G /2 F /2 E C | E F G 2 | G F /2 G /2 A 2 | D E F D :| |: C D /2 E /2 F D | E C D B, | C D /2 E /2 G F | E /2 D /2 E /2 F /2 D E | C D /2 E /2 F E | D /2 D /2 F /2 E /2 F D | E C D E | F E C 2 :| |: G c c d /2 e /2 | d c B A | G c c d /2 e /2 | f d e f | g g g f /2 e /2 | d c B A | G F G /2 A /2 B /2 A /2 | G F E 2 :|
+

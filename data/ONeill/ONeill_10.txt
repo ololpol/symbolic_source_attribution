@@ -1,0 +1,160 @@
+K:Cmix
+K:Cmaj
+2 C B | c F E d D f C E | C D B E | | /2 D | G c
+
+<
+2
+K:Cmaj =A, F G c /2 | | G 3 A | D | c c C | C D /2 d G F D e D c e c F C A f C c B 2 D B C :| C d e e 2 | G | A ^F F, /2 E G B E c' M:6/8 c | | | d A G | C G c 2 G E B d e | g C | F | | B, D c G e G 2 c C d 2 E B /2 e G 2 E d | E :| d B F f c D
+
+K:Cmaj
+K:Cmaj
+G, E F B C |1 | B | E =b | c /2 G G, | > |2 | E G | B z /2 G B /2 /2 G E G e c c /2 c A, :| C f B G e A a > B, B F < /2 B A, | /2 | | G G F 2 | c /2 e D A E B D G c |1 B C c :| b C E E G | F F F F | D B, < a A g E E :| C C E | F E :| e e G G C | g /2 | D G c B E A c' F /2 F c C D E G A E g 2 | A f | E c f | a g F :| C G c B G | 2 D g 2 c' D F B
+
+B,
+/2
+_b | G f B, C E /2 e e c E E G f /2 F A, B | c G | d > 2 c /2 f e d > G c A E C | E C A, c C G B | e A c 2 B D D | E f c B, C E
+
+=e
+M:6/8
+G, B, e E F | F D 2 c D C 2 C A B A c B, d D C F | d b D A A /2 > | g F | | | > B G D 2 | B B g B f 2 d D C :| B c e | B | /2 c' D | f c' c | B 2 F G A D G G F G B, E | 2 E | | | /2 :| F C 2 f e C | F A G 2 c B, C c' A g B /2 |: D :| E f c | | f
+
+/2
+G
+c G E G E F g G G C E G d E | C G G A E G C /2
+
+e'
+^F
+B D E a | C 2 :| F 2 F c A c d A C d |1 D f B 2 D G C E |2 2 > g G C C c | /2 G c' E /2 /2 C c d e F G G c' e d c A | B C C G e d e E D e F | c | C d 2 e c c | G b B G | e 2 2 G | F c c > B, G
+
+K:Cmaj
+M:6/8
+b G B G, | E c c /2 B c C C f F E F F F C E B F c C e E B F B, d c D | 2 | c e G G c D c 3 F 2 G /2 2 | B D D | C G e E G c E | B | D b d e G, D | B /2 f | G g A C | c d /2 | G G c d c C D | A d | d A B | B | d | D F E G, :| E E A G G, F E |2 D B B G 2 :| c c D G | c D D 2 | | F d f | F | B, 2 F B, /2 B C c E
+
+K:Cdor
+e
+| c /2 /2 c c | g | :| B D C E E < B c F D C D G | C _B /2 G d E c E D G D B | C C /2 D c | e D | g | g f | C G G C F G g B e e E A B d | | D C | c B 3 F d | :| D A, a B G |: | /2 c f E B :| _e f :| | | g 2 2 E d 2 D C D | | e G d e | e 2 G /2 A d B G, | G E B | A E A c /2 2 2 C 2 | g f G | g | A d | B A, G f G | | F E d b A | C f G c E 2 C d G F B G c A G b | G d
+
+_b
+G,
+> K:Cmaj > G c | | e B D a d G c C G, D E B D | B | D | | E F | f D c B :| G G | d | E D c' C B B C d C 2 A | A B, c | /2 | c G e B D F 2 | E G e F e | B, B C F E F E c c B G B, | G | G A 2 | A |: C B 2 E G c c E :| E d 3 c | G | E F A C B, b f d E :| > | F < G B D E F C f D :| D | C c 2 c C B D | d | D c c D G C D D f g E e B 2 d F c D D d B G d C | f C D c | B B | /2 G, g :| F D D d C B | G | | e C c c E e F c | |: B B C D c | E C A 2 B G e D |: :| A :| g C F c /2 G |2 D G E c D D 2 C B | C e G G, E F | E C B, G > B, > c E 2 g G G c | A | G c > B /2 c a G, | G A C | B D | | e f B d e G d d B c' D c e 2 E e d E E D g B, | c | B, D | | G C B g B, F | 2 B, G C c | e f c G G d g G /2 D |: :| c C F d F d A E C | 2 C E F G g 3
+
+E
+B,
+D | c | G B, F C C | G E | F | D F C e E c C E E G F d /2 e E D e 2 2 | g | G F
+
+|:
+=B
+/2 /2 2 C 2 B /2 | B G F c C G e | 2 | | E G 2 D G d | | | E 2 | :| D A E F | :| E G D 2 c G d :| D c B /2 G e A g G, G G | A, c d' G A D | F b G | :| A g A | | c d B G, D 2 F B B /2 2 F c f f g c d | B C C a C /2 G | d /2 d G F A, d G G E f A B c d 3 C | | F /2 B D F E D b E | c D 2 /2 f | c G E d E d E G G, | g > F b f c 2 B F E B, d 2 G C d | | | | A c B f g G c B c c F B | C
+
+G,
+E,
+K:Cmaj c E e c 2 A A A B C F | E | c c | b E B c | 2 2 B F B G | G | | C | c C D /2 E E c C B | c B d 2 B e | 2 c D 2 A, G, c D A c | | G | C E | F > g C |: /2 E c C 2 G | c e C c f E D F G, B g | =a C B /2 C B A f c c C | d g g B c e B B c 2 2 d C | G | |: B C e 2 A, | d' | c | | | F E | | c E d | A G D 2 c B | /2 | | e F c | d c d 2 /2 D | g c a d E 2 D | B A G C | B
+
+3
+M:6/8
+F c G a | G B | d D B g e | | G A c 2 | | | c B B, C c G | C | 2 G | /2 f A, d D E B, c D =A, c C 2 /2 | c C B E G B E c b C F G F | C F c G, D | 2 G e c' c | c c g /2 A :| D F D B C C _a E c A f G G C C B A G /2 D | F 2 | _e | G B, D G C c F B c /2 | e :| d 2 F F C A | | c c c C f | F F B C G c C | E C C C D 2 G, C c G d | B d g F G g G | c | C /2 F G > 2 E A C g d /2 D E d c b d e C D | d | | g | G |1 g 2 E F | M:6/8 /2 E > G G G C | e a d c D A | c' c e a B, B B | G G B, b | E | D | f C 2 G E f d 2 | C | G E C A 3 e 2 G e | G, d c B, | c G F C E 2 d B D F c c e c 2 B E f B, C c b g | | A, | f G |: | | A, F | e d :| G e d | D G D C E /2 B | G F G, E F c 2 3 f G G, | > G D g C C B | D F d D D B G | c G B | G A b D b a /2 e | G d c G C c |: D /2
+
+|2
+K:Cmaj
+F /2 e c B C | C /2 /2 G 2 G B | E 2 c | G e A | E c c G 2 D E
+
+/2
+K:Cmaj
+C C A c F B, c g c /2 D :| c E C G e e 3 D G 2 z | e C G D c | 2 F | B, G b F G B G /2 c c 2 F G | /2 > B B C d :| | B 2 G F | | | f G c < d C B | B E d | e D g | C | D c c G F C /2 | E E 2 | E B :| | D C d B E A c D c g > A F | B, c c' G F | | | :| G A | B G c c A | d 2 G > 2 E c G D d C | D E G | F G E B C | /2 e C G /2 d B g e < 2 |2 e E F G d d | D B 2 2 C C B c f c G E F e |2 g c | F, C _a G d 2 /2 C c | f C B, G c | d | /2 c /2 f f | d C F /2 C B G /2 C /2 c 2 | :| d C | G, d D D | 2 D a :| F G d C E G | G E /2 2 | | | B, g a G | g | 2 F | E b e G f C b C /2 c' A, | G B d | g d e A c d b E 2 c | g 2 c C c B G, B c G > a F f C D G C F d d d G G > E B (3 C G C a E E C c D :| | d > g C F B | C C G d' B F C E E C | | B d a F B, D B D B, B C C E f D C c D e G | C c 2 C | d G B C a b G, :| | /2 c d |1 C | A | | | /2 c' g c' c E c' D /2 E G D G d | C | e C c E G c | D g A /2 2 c B, c A | B G | | | | B F
+
+=F
+e
+G D G d G > E E /2 B B 2 B c /2 :| D G 2 /2 G C A f G | G c 2 | /2 | /2 | g F c /2 C C G d e B G G | | | A :| e E c' /2 d | A b D e A, A 3 b A B A E | f E e | F D | G | D | B, G B A G B B C E B c F g B E c | A, E g 3 D c G C c | | e 2 D A | G E E 2 E b F G G :| E e M:6/8 C B e | d c 2 D | a C c' 2 C C D | a 2 c B g | G E c =a G | D E D | G b A, C | /2 D A C c E | B, E 2 G | E A c | | B c E :| /2 f G g e b C | D F c C F D c c C c C D 2 F f e C e B F B, F E e B D 2 C d /2 | D g 2 G e g B E c f | c c | B F d' C G G 2 E C f D a C K:Cmaj c | /2 | c d | C c G E | c e 2 G G G F D 2 2 a d E G E 2 G f G | C c f d | F | A G E d :| | B B F G /2 b | C c D B G E F e G C c | 2 2 G E G /2 :| e E e B, F |: e E G A | C c C C C G C B, B c' e B e G F > G 2 F G d c d | C B F G D A d B E G G | e f | B, 2 C
+
+K:Cmaj
+M:6/8
+G G /2 C B C | F 2 E c F f E | C | f a | | F G c G E c A c e D D C e 2 E g d G | G | g C | F g G f B B, A G C | A C F E F | g | /2 F 2 2 G, | c 2 c C g G D D /2 E e f c /2 | F B | C d B, G, E D D | B | /2 c < B 2 c A, E d c B C G :| E 2 C G E F /2 E C A, C c G C G B =a G 2 /2 c C c B | G |: e' c F | /2 3 d | G C B c C | D G C 2 F _b e | | d d f | A, | /2 C E | F A G F D | | :| e f e e g | d B | c E | | G F C | /2 G e c D | B E | c c d G e G G F D d 2 E E B c D ^f D g
+
+_e
+K:Cmaj
+K:Cmaj C G E /2 E | B d | c c E 2 C B | | f G E g G C E | /2 G d c :| C d d' | | | 2 D | /2 B 2 A | e 2 2 C B G, c C | G | E 2 b D _B | | G | G G 2 C D :| D G G, c d E d E 2 G /2 G g | C | D D C | A G d c | 2 c | e /2 | :| g E | 2 b B F g g | | B e | E C D G e F | b G /2 E b | | | | c | e A B G G g C c d B | 2 G D | | d F d e g =a | B C A e e B
+
+G
+2
+K:Cmaj B, C C A G C G b C G c F G c c F F G C 2 D F d B c G G G F B d
+
+=f
+K:Cmaj
+G G | C | C E c d C E c | a B G F b d | | 2 g | C C |: G F C B, | d C G D B B c' c c d c C g G E C c E | G d c c e G | G E C d G F | G F C E d B c F 2 C 2 F | c f c F c G, F G d D F B E B G | | A F 2 C C c
+
+K:Cmaj
+M:6/8
+C D E G, c F C G | C C E E C B D G d | e | G D | D C G F F d B,
+
+K:Cmin
+^c
+M:6/8 D C D | E /2 G F D E E | G F G, E G | /2 B d G E, d c G | E g C d F c' f E C A, G > C G E 2 E e d | D d G /2 F | G d D B B B A F > | B d A, c G G G E g C | f d | F e G | F c c G | | | B /2 3 B D d |: B K:Cmaj G D | c | A F c | | C E 2 D G =a e 2 3 G A C G C D d | c E c g
+
+=B
+K:Cmaj
+M:6/8 c /2 2 /2 g G F E b d A :| F B F /2 F c d |2 C B =b C 2 E C c G E c G F B E D D G E G C B E c f c' | /2 c | F | d G :| G G, G F c | A G e | e /2 g D G, d c A, E :| e A a /2 C G e C A /2 d | e F D | F f G c D | 2 C g d C F | E B F d B E G B c |: C F | /2 | B, E C B, c' c f F G A E | D B f 2 2 E 2 E | g C d G A c A G B, c A :| f c F | E E c c | G, c d | 2 C F B, C | d D C D a c D F /2 c 2 d =b E G E C G b d' g G /2 C
+
+B
+K:Cmaj
+K:Cmaj c /2 /2 G D B d | G G /2 G, D 2 d /2 A E 2 g F D | G G G C :| G g D D c F E | F F G C 2 c c B :| F G g e c 2 c 2 B, C C C D | A | | D c | | /2 | e G C | D C E :| | | | d A | d E F C /2 C /2 | D c | e f B F d E C C |1 c' c 2 2 :| B, f B a E B 2 D A f F C e c G d 2 c B, G 2 C D | B | E | B, B, | B G E G G e |
+
+M:6/8
+K:Cmaj
+K:Cmaj d A g c c | C d d | G G | (3 e =F D E | f B E | B B E B D e E 2 2 E > D a B, E C | 2 E 2 G g c A | B G G d E 2 D D F | d C d /2 E F d D | G c G G f g c |1 E d | =a B d E A /2 E G G a A E |1 c | | | B G B 2 | D B C D D C d D C g C | G e
+
+=A,
+M:6/8
+K:Cmaj c | G /2 :| B, B D c C G, D > G G G | C d C E C :| | | F G G A G G f | B c |1 E E c c C C c :| | f E E B, G F E | D e G C C g B, C C g F 2 c A E F A :| D F G G C B B A, c A E | 2 c E F C c e | E | C C G c /2 A c B, | c A /2 > | G, C D A B F C E b F 2 | C G c c |: /2 B | e c :| D E c F | c B B c
+
+K:Cmaj
+K:Cmaj
+K:Cmaj e G /2 d B b D :| | B, B 2 E A e
+
+M:6/8
+G,
+| | | e D e <s> (3 e G D /2 D G e e 2 | F B, 2 A D e F | | d E | :| /2 C c D C G E d c D D G D B 2 E C g | E B | |: 2 d B B 2 e E f B A =B =b G E /2 G A d B C 2 c F (3 D F D d E D | d G c C > | | D d E A B D G | f E G F G 2 C E A A | d E G | c d E | e F D e f E B G g B b d 2 D 2 | | B E d b d E f E f F | | G
+
+_b
+|2
+C /2 | | | c d c A B /2 | G <s> c B G c e | 2 F G d B, g | G c E | D D c 2 B
+
+2
+D
+G c G F | B C c G, B E D F > G 2 | f | D B c | e | _b D C E | g | A E /2 | D E A c G C f B, B /2 A, d e 2 c F A D e A D C c D G G A C
+
+K:Cmaj
+M:6/8
+K:Cmaj /2 B, | A, C c c D d c C e c B c D C G c > 2 /2 2 | D F B f B B B c | d G c d G G G c A, D | f D |: | a E D F G, | F | G G | :| d f | E C F B C G G A e | d B A d f |: B E :| C C G A 2 B | | E A D d | e E 2 G e 2 G | G B, E B F C G :| G F c E C |: A, E |: | | B C | 2 c c c | C c E D E b 3 :| c G 2 C D 2 d B c A E c d f
+
+^f
+/2
+| G | D /2 f d F f d f C
+
+M:6/8
+K:Cmin
+C C G C c | C C D e f D a E > C c B D D c G g B, C | e C C | 2 C | 2 G e c C G f f B G, g B F :| C c | | E c c' | E C /2 F | z E G B | E A B B e F /2 d /2 C E A E | | | D g G, c D e E B, B C e C :| e B A c | E | E /2 G 2 | F C A, /2 G B g B 2 | e c c /2 E 2 B b C D f | | G f | F G C /2 d |1 c' c | | | | e | | D c C d d A G c F A G e | C E C | F c | F C D | b | _a B | G c' D 2 C c :| A f G G 2 B e | C G d' f F B | C B D
+
+b
+|:
+K:Cmaj | c' F B C E D /2 E | G | | E B c /2 | A c C e c E D c C /2 | c c F B c c E | c G | e D | F B G E :| G B B 3 D f G F B | | B | C d | c' :| A, | C F G B d d 2 | A g F | c' E B G c | D | c | | G e | |: C :| B 2 g d :| c a f :| G, F c G 2 B C |2 | g 2 B | C | A G B 2 c (3 C D D d e G B c e b C B e C :| | f c B, 3 | d e /2 /2 B B | G c g e A G e G | | C | /2 B f e G, c E e | B A c |
+
+M:6/8
+K:Cmaj
+g A E D G D /2 | G G C A F g C B /2 c e A A E d D D C B, | b F | E F c | | E E | C G, c a g A E E B /2 E F /2 =A C G F _E B g A A c' E G A | F _B, G E E E f | c e E E | G
+
+_E
+|:
+(3 | c G | E G > G | C 2 D 2 B F A | C A E C f A C | e D /2 C < e B, | d c G D | G
+
+=F
+c
+| | B C 2 E C F F B g g g B E E b d /2 B G G c c A D | | C d | F g B 2 C F B g d :|
+
+M:6/8
+d
+G, | D C | | | G a /2 D | | F | G E F | g f c C G d G c b E | B | E B C | B G c B | E F | :| B F G E A e G C f G c' D :| B D D f G 2 G | G 2 :| c E D G F B d B F z F d F b F /2 D F, E B d C G B G, A e G g /2 E B | e a | E < c c D e /2 2 e g | G G G C e C c d C | :| c c c D B 2 | A /2 D B | G, g A C e D c | B f E D =a |: B C | D C E B F c A, :| |1 E | E B, d B A, F A | F c f c' e f D | c' C C D D D /2 e 2 B D :| C _E B, f E d c D d C F > | F d B c c G a G D d F g D A e c | g | | B, f A e c G A B B E G A c F B f b | | | | C D E E | G G | D | | g C B c B e B /2 A B, G | C g c e B /2 | C | D E | /2 C A C c B E c' | D c A F E |: G, F c G f c G | c :| /2 E /2 d /2 C e F F B, c' F > | E B c C G D D :| | > g E c' A | c d E c :| e | E B | C B, D c D G e e B, | G c c _B F | | D d e d G F A, G | c E c G C /2 f F c' g | > 2 2 f E D A | G /2 D c' D | f b | c D E B G d D f F | A c d F G F B | A e D G A, F c d E f | B d F c G c' b | G c d D
+
+K:Cdor
+e
+/2 /2 C A | 2 D B c | G /2 | C c | d C e | | 2 | E b C B B B /2 D | D E /2 :| 2 A | | G | | C D G B F d /2 | B a c e F | c E E D 2 E D C | d d e c d c | | c b c B F 2 F G A E e 3 d c G E e c C 2 C G F C F | g c' C 2 e B B, K:Cmin | | | E < C D
+
