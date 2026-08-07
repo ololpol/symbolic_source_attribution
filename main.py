@@ -783,20 +783,20 @@ if __name__ == "__main__":
     #["ONeill","ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"] 
 
 
-    #source_label_list = [output_modified, output_both, output_meter, output_key, oneilljigs_labels]
+    source_label_list = [oneilljigs_labels, output_modified, output_both, output_meter, output_key]
     #source_label_list = [output_meter, output_key, output_modified]
 
     #source_label_list = [output_both]
-    source_label_list = [oneilljigs_labels]
+    #source_label_list = [oneilljigs_labels]
     
-    #target_label_list = [data_both, data_both, data_meter, data_key, oneilljigs_labels]
+    target_label_list = [oneilljigs_labels, data_both, data_both, data_meter, data_key]
     #target_label_list = [data_meter, data_key, data_both]
 
     #target_label_list = [data_both]
-    target_label_list = [oneilljigs_labels]
+    #target_label_list = [oneilljigs_labels]
     
-    #default_name_list = ["modified", "both", "meter", "key", "oneill"] #"oneill", 
-    default_name_list = ["both"]
+    default_name_list = ["oneill", "modified", "both", "meter", "key"] #"oneill", 
+    #default_name_list = ["both"]
     #default_name_list = ["oneill"]
 
     if len(source_label_list) != len(target_label_list):
@@ -832,9 +832,9 @@ if __name__ == "__main__":
                     if len(data[label][embedding]) < 400:
                         plotting.local_dist_grid(data, label, embedding)
         plotting.plot_data_dist(data, target_labels, default_name_list[i])
-        #plotting.make_embedding_plots(data, both_labels, embeddings)
+        plotting.make_embedding_plots(data, both_labels, embeddings)
 
-        #plotting.make_distance_plots(data, source_labels, target_labels, embeddings, methods)
+        plotting.make_distance_plots(data, source_labels, target_labels, embeddings, methods)
 
 
         attribution_configs = [  #top_N, dist_threshold, top_Y, attribution_threshold
@@ -848,7 +848,7 @@ if __name__ == "__main__":
             #[None, None, 3, None]
         ]
 
-        #plotting.make_attribution_plots(data, source_labels, target_labels, embeddings, methods, attribution_configs)
+        plotting.make_attribution_plots(data, source_labels, target_labels, embeddings, methods, attribution_configs)
         
         if i == 0 or i == 1: 
             for label in source_labels:
