@@ -20,10 +20,8 @@ import subprocess
 import glob
 import shutil
 
-secondary_labels = []  #Labels that should not be used to generate main plots
-#target_data_labels = ["ONeill", "output", "Folkwiki"]
-embeddings = ["clamp"] # options: "clamp", "clap", "muq", "folkrnn", "random"
-methods = ["cosine"] # options: "euclidean", "cosine", "cl", "matching", "hamming", "jaccard", "orchini", "sorencen-dice", "tanimoto", "tucker", "tversky"
+embeddings = ["clamp"] # options: "clamp", "clap", "muq", "random"
+methods = ["cosine"] # options: "euclidean", "cosine"
 CLAMP_MODEL_NAME = "sander-wood/clamp-small-512"
 
 random.seed(61)
@@ -52,7 +50,6 @@ def verify_folder_structure():
             os.makedirs(folder)
     plotting.verify_plot_folder()
 
-    #TODO check if a set of sub folders exist in the data folder, and create them if they don't
 
 
 def load_abc(data_path):
@@ -216,8 +213,6 @@ def process_abc(labels, model_name="clap"):
                 audio_data, _ = librosa.load(wav_file, sr=48000) # sample rate should be 48000
                 audio_data = audio_data.reshape(1, -1) # Make it (1,T) or (N,T)
                 audio_embed = model.get_audio_embedding_from_data(x = audio_data, use_tensor=False)
-                #print("Audio embed first 20:", audio_embed[:,-20:])
-                #print("Audio embed shape:", audio_embed.shape)
                 res.append(audio_embed[0])
             elif model_name == "muq":
                 # Extract music embeddings
@@ -243,21 +238,6 @@ def process_abc(labels, model_name="clap"):
 
 
 
-def assure_wav(label = "ONeill"):
-    #TODO use this?
-    wav_fname = f"data/wav/{label}/"
-
-    if not os.path.exists(wav_fname):
-        raise FileNotFoundError(f"No wav folder found for label '{label}'. Expected at '{wav_fname}'")
-
-    # Check if wav folder is empty
-    folder_files = os.listdir(wav_fname)
-    folder_files = [f for f in folder_files if f.endswith(".wav")]
-    if len(folder_files) == 0:
-        raise FileNotFoundError(f"Wav folder for label '{label}' is empty. Expected wav files in '{wav_fname}'")
-
-
-    return wav_fname
 
 
 
@@ -287,7 +267,6 @@ def extract_wav(label, id):
             f"timidity failed for '{midi_fname}':\n{timidity_result.stderr}"
         )
 
-    #print(f"wav file extracted for label '{label}' and id '{id}'")
 
     return wav_fname
 
@@ -307,7 +286,6 @@ def embed(data, embedding, use_cache = True, cache_label = ""):
     # check if the embedded data exists in cache, if so load it instead of recomputing
     if use_cache:
         cache_folder = os.listdir("cache")
-        #print("Found files in cache:", cache_folder)
         if cache_label != "":
             cache_label = "_"+cache_label
         else: 
@@ -317,7 +295,6 @@ def embed(data, embedding, use_cache = True, cache_label = ""):
     if use_cache and cache_file in cache_folder:
         with open("cache/"+cache_file, "rb") as f:
             res = pickle.load(f)
-        #print(embedding+cache_label, "embeddings loaded from cache")
         return np.array(res)
     elif embedding == "clamp":
         print("Embedding", cache_label, "with CLAMP model")
@@ -366,9 +343,8 @@ def clamp(tunes):
 
 
     for t in tunes:
-        #remove spaces from t, TODO this can be done earier since all models want this
+        #remove spaces from t
         t = t.replace(" ", "")
-        print("prepring tune for CLAMP: ", t)
 
         query = load_music(data=t)
         query_ids = encoding_data([query], patchilizer, music_length)
@@ -469,8 +445,6 @@ def embed_all(data, embeddings):
             embedded_data = embed(data[label], embedding, cache_label = label)
             data[label][embedding] = embedded_data
 
-            #print(label, data[label][embedding].shape)
-            #embed_len = len(embedded_data[0])
             data[label]["avg_embed"] = np.average(embedded_data, axis=0)
 
     return data
@@ -490,7 +464,6 @@ def compute_dist(source, data, method):
 
     
     if method == "euclidean":
-        # TODO do this with numpy for efficiency
         dists = []
         for e1 in source:
             dists_d = []
@@ -501,46 +474,12 @@ def compute_dist(source, data, method):
         dists = np.array(dists)
     elif method == "cosine":
         # Cosine distances
-        # TODO do this with numpy for efficiency
         dists = np.zeros((len(source), len(data)))
         for i, e1 in enumerate(source):
             for j, e2 in enumerate(data):
                 dist = scipy.spatial.distance.cosine(e1, e2)
                 dists[i, j] = dist
-            
-            
-            #dot_product = sum([a*b for a,b in zip(e1,e2)])
-            #norm_e1 = sum([a**2 for a in e1])**0.5
-            #norm_e2 = sum([b**2 for b in e2])**0.5
-            #dist = 1 - dot_product / (norm_e1 * norm_e2)
-            #dists.append(np.array(dist))
-    elif method == "cl":
-        #Contrastive learning encoding distance
-        pass
-    elif method == "matching":
-        # Simple Matching Coefficient
-        pass # binary vectors
-    elif method == "hamming":
-        # Hamming distance
-        pass # binary vectors?
-    elif method == "jaccard":
-        # Jaccard index
-        pass # For sets?
-    elif method == "orchini":
-        # Orchini similarity
-        pass # i guess this is just cosine similarity?
-    elif method == "sorencen-dice":
-        # F1 score?
-        pass
-    elif method == "tanimoto":
-        # Tanimoto distance
-        pass #binary sets?
-    elif method == "tucker":
-        # Tucker coefficient of congruence
-        pass # i guess this is just cosine similarity?
-    elif method == "tversky":
-        # Tversky index
-        pass # For sets
+
     else:
         raise ValueError("Unsupported distance method: {}".format(m))
 
@@ -565,7 +504,6 @@ def compute_attribution(data, source_labels, target_labels, attribution_method =
         extract_N (int): If specified, extracts the top N closest items for each output embedding with distance threshold dist_threshold. Default is None.
         extract_write (bool): If True, writes the extracted items to a file. Default is True.
     """
-    #TODO more ways to do this
     
     id_map = {}
     label_map = {}
@@ -594,33 +532,19 @@ def compute_attribution(data, source_labels, target_labels, attribution_method =
 
 
 
-    
-    #print("id_map: ", id_map)
-    #print("label_map: ", label_map)
-    #print("ids: ", ids)
-    #print("ns: ", ns)
-
     outputs = None
     for label in source_labels:
         if outputs is None:
             outputs = data[label][embedding]
         else:
             outputs = np.vstack([outputs, data[label][embedding]])
-    #print("embeddings shape: ", embeddings.shape)
 
-    #print("outputs shape: ", outputs.shape)
     
 
     res = np.zeros((len(outputs), n_artists))
     dists = None
     dists = compute_dist(outputs, embeddings, method=dist_method)
-    #for j, output in enumerate(outputs):
-    #    dists_j = compute_dist(output, embeddings, method=dist_method)
-    #    if dists is None:
-    #        dists = np.array(dists_j)
-    #    else:
-    #        dists = np.vstack([dists, dists_j])
-    #print("dists shape: ", dists.shape)
+
 
 
     dists_flat = dists.flatten()
@@ -642,12 +566,8 @@ def compute_attribution(data, source_labels, target_labels, attribution_method =
     
 
     for j, output in enumerate(outputs):
-        #sims = np.exp(-np.array(dists)/temperature)
         dist_j = dists[j]
-        #TODO check this
-        #cos theta + 1
-        #e ^ (1-d)
-        #1 - d
+
 
         # top N of distances, per item distance thresold
         if extract_N is not None:
@@ -677,7 +597,6 @@ def compute_attribution(data, source_labels, target_labels, attribution_method =
         
 
 
-        #TODO other methods to convert this     
         sims_j = 1 - dist_j 
         #print(f"sims_j stats: min {np.min(sims_j)}, max {np.max(sims_j)}, mean {np.mean(sims_j)}, median {np.median(sims_j)}")
         #print("Nr of nonzero sims_j:", np.sum(sims_j > 0))
@@ -685,21 +604,16 @@ def compute_attribution(data, source_labels, target_labels, attribution_method =
         #print("sims shape:", sims_j.shape)
         attribution = np.zeros(n_artists)
         for i in range(len(sims_j)):
-            #if (sims_j[i] > 0):
-            #    print("attribution", ids[i],"increased by", sims_j[i], "element", i)
             attribution[ids[i]] += sims_j[i]
         
-        #print("raw attribution for output {}: {}".format(j, attribution))
         for i in range(len(attribution)):
             attribution[i] /= ns[i] #normalize per artist
 
-        #print("pre softmax: ", attribution)
 
         if np.sum(attribution) > 0:
             attribution = attribution / np.sum(attribution) #normalize across artists
         else:
             print("Warning: attribution sum is 0. Cannot normalize")
-        #attribution = scipy.special.softmax(attribution) #normalize across artists
 
         # top Y artists, per artist threshold attribution
         if attribution_threshold is not None:
@@ -714,7 +628,6 @@ def compute_attribution(data, source_labels, target_labels, attribution_method =
             attribution = attribution / np.sum(attribution) #normalize across artists
 
 
-        #print("post softmax: ", attribution)
         res[j] = attribution
     
 
@@ -735,9 +648,6 @@ def get_data(labels):
     """
     data = {}
 
-    
-    #process_abc(secondary_labels, model_name="muq")
-    #process_abc(secondary_labels, model_name="clap")
 
     for label in labels:
         label_name = label.split("/")[-1]
@@ -780,31 +690,21 @@ if __name__ == "__main__":
     oneilljigs_labels = load_folder("data/ONeill")
 
     
-    #["ONeill","ONeill_10","ONeill_20","ONeill_30","ONeill_40","ONeill_50","ONeill_60","ONeill_70","ONeill_80","ONeill_90","ONeill_100"] 
 
 
-    source_label_list = [oneilljigs_labels, output_modified, output_both, output_meter, output_key]
-    #source_label_list = [output_meter, output_key, output_modified]
+    source_label_list = [oneilljigs_labels, output_both, output_meter, output_key, output_modified]
 
-    #source_label_list = [output_both]
-    #source_label_list = [oneilljigs_labels]
     
-    target_label_list = [oneilljigs_labels, data_both, data_both, data_meter, data_key]
-    #target_label_list = [data_meter, data_key, data_both]
-
-    #target_label_list = [data_both]
-    #target_label_list = [oneilljigs_labels]
+    target_label_list = [oneilljigs_labels, data_both, data_meter, data_key, data_both]
     
-    default_name_list = ["oneill", "modified", "both", "meter", "key"] #"oneill", 
-    #default_name_list = ["both"]
-    #default_name_list = ["oneill"]
+    default_name_list = ["oneill", "both", "meter", "key", "modified"]
 
     if len(source_label_list) != len(target_label_list):
         raise ValueError("Source and target label lists must have the same length")
     
 
 
-    #plotting.plot_key_meter_grid(data_dir="data/data_v2", output_name="key_meter_grid")
+    plotting.plot_key_meter_grid(data_dir="data/data_v2", output_name="key_meter_grid")
 
     for i in range(len(source_label_list)):
         print(f"Processing source label list {i}: {source_label_list[i]}")
@@ -817,7 +717,6 @@ if __name__ == "__main__":
         # Load abc and wav formats of the data
         print("Loading data for labels:", both_labels)
         data = get_data(both_labels)
-        #print(data)
 
         # Shorten label names
         source_labels = [label.split("/")[-1] for label in source_labels]
@@ -839,13 +738,8 @@ if __name__ == "__main__":
 
         attribution_configs = [  #top_N, dist_threshold, top_Y, attribution_threshold
             [None, None, None, None],
-            #[5, None, None, None],
             [10, None, None, None],
-            #[4, None, None, None],
-            #[None, 0.2, None, None],
             [None, 0.3, None, None]
-            #[None, 0.4, None, None],
-            #[None, None, 3, None]
         ]
 
         plotting.make_attribution_plots(data, source_labels, target_labels, embeddings, methods, attribution_configs)

@@ -115,7 +115,6 @@ def load_dump_file(file_path):
     for line in lines:
         line = line.strip()[1:-1]
         row = [np.float64(item) for item in line.split() if item]
-        #row = [item for item in line.split() if item]
         
         result.append(row)
     
@@ -183,7 +182,6 @@ def plot_embeddings_pca(data, labels = "ONeill", embedding = "clamp", name=None,
     pca = PCA(n_components=components)
     reduced_embeddings = pca.fit_transform(embeddings)
 
-    #print("PCA VR:", pca.explained_variance_ratio_)
 
 
     plt.clf()
@@ -216,7 +214,6 @@ def plot_pca_variance(data, labels = "ONeill", embedding = "clamp", name=None, c
     if isinstance(labels, str):
         labels = [labels]
     embeddings = extract_embeddings(data, labels, embedding)
-    #print("Embeddings shape:", embeddings.shape)
     if name is None:
         label_str = "-".join(labels)
         name = f"{label_str}_{embedding}"
@@ -425,8 +422,7 @@ def get_shortest_dists(data, label = "ONeill", embedding = "clamp", method ="cos
     for i in range(len(dists)):
         dists[i][i] = float("inf") # ignore self distance
     
-    #TODO this can be optimized by using numpy functions instead of flattening and sorting
-    #TODO this breaks if N is big and we get the self distances
+    #this breaks if N is big and we get the self distances
     order = np.argsort(dists.flatten())
     shortest_dists = [dists.flatten()[i] for i in order[:N]]
     indices = [(i//len(dists), i%len(dists)) for i in order[:N]]
@@ -474,12 +470,9 @@ def plot_distance_average(data, source_labels = "ONeill", target_labels = None, 
             name = f"{source_label_str}_{target_label_str}_{embedding}_{method}"
 
 
-    #print("Computing distances between", source_labels, "and", target_labels, "using", embedding)
 
     dists = compute_dist(source_embeddings, target_embeddings, method=method)
-    #for e in source_embeddings:
-    #    out_dists = compute_dist(e, target_embeddings, method=method)
-    #    dists.append(out_dists)
+
 
     N = len(dists) # = len(source_embeddings)
     
@@ -639,19 +632,7 @@ def plot_attribution(attribution, id_map, name, config_label = None):
         # Add colorbar
         cbar = plt.colorbar(im, ax=ax)
         cbar.set_label('Attribution value', rotation=270, labelpad=15)
-        
-        # Add text annotations for values
-        #for i, key in enumerate(all_keys):
-        #    for j, meter in enumerate(all_meters):
-        #        value = grid[i, j]
-        #        if value > 0:
-        #            text = ax.text(j, i, f'{value:.2f}', ha="center", va="center",
-        #                         color="black" if value < grid.max() / 2 else "white",
-        #                         fontsize=9)
-        
-        #ax.set_xlabel('Key', fontsize=12)
-        #ax.set_ylabel('Meter', fontsize=12)
-        #ax.set_title(f"Attribution for {name}")
+
         
         plt.tight_layout()
         if config_label != None:
@@ -714,7 +695,6 @@ def plot_attribution_distribution(data, source_labels = "ONeill", target_labels 
     counts = [0]*N_artists
     avg = [0]*N_artists
 
-    #TODO could probably do some numpy stuff here
     for i in range(len(attribution)):
         amax = np.argmax(attribution[i])
         counts[amax] += 1
@@ -779,23 +759,7 @@ def plot_attribution_distribution(data, source_labels = "ONeill", target_labels 
                 cbar.set_label('Attribution count', rotation=270, labelpad=15)
             else:
                 cbar.set_label('Attribution average', rotation=270, labelpad=15)
-            
-            # Add text annotations for values
-            #for i, key in enumerate(all_keys):
-            #    for j, meter in enumerate(all_meters):
-            #        value = grid[i, j]
-            #        if value > 0:
-            #            text = ax.text(j, i, f'{value:.2f}', ha="center", va="center",
-            #                        color="black" if value < grid.max() / 2 else "white",
-            #                        fontsize=9)
-            
-            #ax.set_xlabel('Key', fontsize=12)
-            #ax.set_ylabel('Meter', fontsize=12)
 
-            #if id == 0:
-            #    ax.set_title(f"Attribution counts {name}")
-            #else:
-            #    ax.set_title(f"Average attribution for {name}")
             
             plt.tight_layout()
             if config_label != None:
@@ -845,7 +809,6 @@ def plot_modification_dist(A, B, name = None, config_label = None):
         None
     Resulting image is saved as "plots/attribution/{config_label}/difference_{name}.png".
     """
-    #TODO check that this works
     # Create 2D grid plot
     grid = B - A
     all_meters = ["6_8", "2_4", "12_8", "3_2", "9_8", "3_4", "4_4"]
@@ -885,7 +848,7 @@ def make_embedding_plots(data, labels, embeddings):
 
     for embedding in embeddings:
         for label in labels:
-                    # Embedding plots
+            # Embedding plots
 
             print(len(data[label][embedding]), data[label][embedding][0].shape)  
 
@@ -899,12 +862,6 @@ def make_embedding_plots(data, labels, embeddings):
             if n_components >= 5:
                 plot_pca_pairs(data, label, embedding)
 
-
-            #TODO fix this maybe
-            #n_components = 20#min(101, len(data[label][embedding][0]), len(data[label][embedding])) - 1
-            #print(len(data[label][embedding]), data[label][embedding][0].shape)  
-            #if len(data[label][embedding]) > n_components:
-            #    plot_pca_variance(data, label, embedding, components=n_components)
 
 
 def make_distance_plots(data, source_labels, target_labels = None, embeddings = ["clamp"], methods = ["cosine"]):
@@ -946,23 +903,10 @@ def make_distance_plots(data, source_labels, target_labels = None, embeddings = 
             plot_origin_distance(data, label, embedding, method="euclidean", t_step=0.01)
             plot_centroid_distance(data, label, embedding, method="euclidean", t_step=0.01)
 
-        #e_out = random.choice(data["ONeill_100"][embedding])
-        #for method in methods:
-        #    #print("e_out:", e_out)
-        #    #print("e_out shape:", e_out.shape)
-        #    out_dists = compute_dist(e_out, data["ONeill"][embedding], method)[0]
-        #    #print("OD:", out_dists, out_dists.shape) 
-        #    out_dists_full = compute_dist(e_out, np.vstack([data["ONeill"][embedding], data["ONeill_100"][embedding]]), method)[0]
-
-
-        #    plot_distance_distribution(out_dists, embedding+"_"+m, t_step=0.01)
-        #    plot_distance_distribution(out_dists_full, embedding+"_full_"+m, t_step=0.01)
-
 
         for label in source_labels:
             target_labels = target_labels.copy()
             attribution, id_map, label_map, extracted = compute_attribution(data, source_labels=[label], target_labels = target_labels, attribution_method = None, dist_method = "cosine", embedding = embedding, extract_N=999, extract_write=False)
-            #print("extracted:", extracted)
             e = random.randint(0, len(extracted)-1)
             name = label + "_" + embedding + "_item_" + str(e)
             plot_min_pos(extracted[e], id_map, label_map, name)
@@ -1015,24 +959,27 @@ def make_attribution_plots(data, source_labels, target_labels = None, embeddings
                 plot_attribution(random.choice(attribution), id_map, label + "_" + embedding, config_label = config_label)
                 plot_attribution_distribution(data, [label], target_labels, embedding, top_N = config[0], dist_threshold=config[1], top_Y=config[2], attribution_threshold=config[3], config_label = config_label)
             
-            cmaj_68 = load_dump_file(f"plots/attribution/{config_label}/dump_folkrnn_v2-Cmaj-6-8_clamp_cosine.txt")
-            cmaj_44 = load_dump_file(f"plots/attribution/{config_label}/dump_folkrnn_v2-Cmaj-4-4_clamp_cosine.txt")
 
-            cmaj_68_to_cmaj_44 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:6-8_to_Cmaj_4-4_clamp_cosine.txt")
-            cmaj_68_to_cmin_68 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:6-8_to_Cmin_6-8_clamp_cosine.txt")
-            cmaj_68_to_cmin_44 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:6-8_to_Cmin_4-4_clamp_cosine.txt")
-            cmaj_44_to_cmin_68 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:4-4_to_Cmin_6-8_clamp_cosine.txt")
-            cmaj_44_to_cmin_44 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:4-4_to_Cmin_4-4_clamp_cosine.txt")
-            cmaj_44_to_cmaj_68 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:4-4_to_Cmaj_6-8_clamp_cosine.txt")
-            cmaj_68_to_cmix_32 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:6-8_to_Cmix_3-2_clamp_cosine.txt")
+            if "_to_" in source_labels[0]:
+                # modification plots for modified data
+                cmaj_68 = load_dump_file(f"plots/attribution/{config_label}/dump_folkrnn_v2-Cmaj-6-8_clamp_cosine.txt")
+                cmaj_44 = load_dump_file(f"plots/attribution/{config_label}/dump_folkrnn_v2-Cmaj-4-4_clamp_cosine.txt")
 
-            plot_modification_dist(cmaj_68, cmaj_68_to_cmaj_44, "Cmaj_M:6-8_to_Cmaj_4-4_clamp_cosine", config_label)
-            plot_modification_dist(cmaj_68, cmaj_68_to_cmin_68, "Cmaj_M:6-8_to_Cmin_6-8_clamp_cosine", config_label)
-            plot_modification_dist(cmaj_68, cmaj_68_to_cmin_44, "Cmaj_M:6-8_to_Cmin_4-4_clamp_cosine", config_label)
-            plot_modification_dist(cmaj_44, cmaj_44_to_cmin_68, "Cmaj_M:4-4_to_Cmin_6-8_clamp_cosine", config_label)
-            plot_modification_dist(cmaj_44, cmaj_44_to_cmin_44, "Cmaj_M:4-4_to_Cmin_4-4_clamp_cosine", config_label)
-            plot_modification_dist(cmaj_44, cmaj_44_to_cmaj_68, "Cmaj_M:4-4_to_Cmaj_6-8_clamp_cosine", config_label)
-            plot_modification_dist(cmaj_68, cmaj_68_to_cmix_32, "Cmaj_M:6-8_to_Cmix_3-2_clamp_cosine", config_label)
+                cmaj_68_to_cmaj_44 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:6-8_to_Cmaj_4-4_clamp_cosine.txt")
+                cmaj_68_to_cmin_68 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:6-8_to_Cmin_6-8_clamp_cosine.txt")
+                cmaj_68_to_cmin_44 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:6-8_to_Cmin_4-4_clamp_cosine.txt")
+                cmaj_44_to_cmin_68 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:4-4_to_Cmin_6-8_clamp_cosine.txt")
+                cmaj_44_to_cmin_44 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:4-4_to_Cmin_4-4_clamp_cosine.txt")
+                cmaj_44_to_cmaj_68 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:4-4_to_Cmaj_6-8_clamp_cosine.txt")
+                cmaj_68_to_cmix_32 = load_dump_file(f"plots/attribution/{config_label}/dump_K:Cmaj_M:6-8_to_Cmix_3-2_clamp_cosine.txt")
+
+                plot_modification_dist(cmaj_68, cmaj_68_to_cmaj_44, "Cmaj_M:6-8_to_Cmaj_4-4_clamp_cosine", config_label)
+                plot_modification_dist(cmaj_68, cmaj_68_to_cmin_68, "Cmaj_M:6-8_to_Cmin_6-8_clamp_cosine", config_label)
+                plot_modification_dist(cmaj_68, cmaj_68_to_cmin_44, "Cmaj_M:6-8_to_Cmin_4-4_clamp_cosine", config_label)
+                plot_modification_dist(cmaj_44, cmaj_44_to_cmin_68, "Cmaj_M:4-4_to_Cmin_6-8_clamp_cosine", config_label)
+                plot_modification_dist(cmaj_44, cmaj_44_to_cmin_44, "Cmaj_M:4-4_to_Cmin_4-4_clamp_cosine", config_label)
+                plot_modification_dist(cmaj_44, cmaj_44_to_cmaj_68, "Cmaj_M:4-4_to_Cmaj_6-8_clamp_cosine", config_label)
+                plot_modification_dist(cmaj_68, cmaj_68_to_cmix_32, "Cmaj_M:6-8_to_Cmix_3-2_clamp_cosine", config_label)
 
 
 
